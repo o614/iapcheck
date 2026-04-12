@@ -3,307 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>AppPrice - 现代全球比价</title>
+    <title>AppPrice - 全球比价看板 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            /* 还原截图中的唯美弥散渐变背景 */
-            background: linear-gradient(135deg, #e6eeff 0%, #f4e8ff 50%, #f0f7ff 100%);
-            background-attachment: fixed;
-            -webkit-tap-highlight-color: transparent;
-        }
-        /* 隐藏水平滚动条但保留功能 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #eff6ff 100%); background-attachment: fixed; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* 玻璃拟物卡片基础样式 */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
-        }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #10b981; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
+        .active-tab { border-bottom: 2px solid #000; color: #000; font-weight: 700; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #0071e3; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+<body class="text-gray-900 antialiased min-h-screen">
 
-    <header class="w-full max-w-[1200px] mx-auto px-4 pt-6 pb-2 flex justify-between items-center relative z-20">
-        <div class="flex items-center gap-2 font-bold text-xl tracking-tight cursor-pointer" onclick="location.reload()">
+    <header class="w-full max-w-[1200px] mx-auto px-4 pt-6 pb-2 flex justify-between items-center">
+        <div class="flex items-center gap-2 font-bold text-xl cursor-pointer" onclick="location.reload()">
             <div class="w-8 h-8 bg-black text-white rounded-xl flex items-center justify-center text-sm">P</div>
             AppPrice
         </div>
-        
-        <div class="hidden md:flex bg-white/60 backdrop-blur-md border border-white rounded-full p-1 shadow-sm">
-            <button class="px-6 py-1.5 text-sm font-medium text-gray-700 hover:bg-white rounded-full transition">首页</button>
-            <button class="px-6 py-1.5 text-sm font-medium bg-white shadow-sm rounded-full text-black">订阅</button>
-            <div class="flex items-center px-4 border-l border-gray-300/50 ml-2 relative">
-                <svg class="w-4 h-4 text-gray-400 absolute left-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" id="searchInput" placeholder="搜索 App..." value="ChatGPT" class="w-32 bg-transparent border-none pl-8 text-sm outline-none focus:w-48 transition-all" onkeypress="if(event.key === 'Enter') doSearch()">
-            </div>
+        <div class="flex-grow max-w-md mx-8 relative">
+            <input type="text" id="searchInput" placeholder="搜索应用..." class="w-full bg-white/60 border border-white rounded-full py-2 px-10 text-sm outline-none focus:bg-white transition shadow-sm" onkeypress="if(event.key === 'Enter') doSearch(this.value)">
+            <svg class="w-4 h-4 absolute left-4 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
-
-        <div class="flex gap-2">
-            <button onclick="doSearch()" class="md:hidden bg-black text-white px-4 py-2 rounded-full text-sm font-medium">搜索</button>
-            <button class="w-10 h-10 bg-white/60 rounded-full flex items-center justify-center border border-white hover:bg-white transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
+        <div class="hidden md:flex items-center gap-4 text-xs font-bold text-gray-400">
+            <span class="text-blue-500">HOT APPS 🔥</span>
+            <div id="hotAppsList" class="flex gap-3"></div>
         </div>
     </header>
 
-    <main class="w-full max-w-[1200px] mx-auto px-4 pb-12 flex-grow relative z-10">
-        
-        <div class="glass-card rounded-[28px] p-6 md:p-8 mt-4 mb-8">
-            <div class="flex flex-col md:flex-row gap-6 items-start">
-                <div id="appIconBox" class="w-24 h-24 rounded-[22px] bg-white shadow-sm border border-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                    <span class="text-gray-300 text-sm">等待搜索</span>
-                </div>
-                <div class="flex-grow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h1 id="appNameTitle" class="text-3xl font-bold text-gray-900 tracking-tight">App Name</h1>
-                            <p class="text-sm text-gray-500 mt-2 flex items-center gap-2">
-                                <span id="appDevTitle">Developer Info</span>
-                                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                                <span class="font-semibold text-gray-700">Productivity</span>
-                            </p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-500 mt-4 leading-relaxed max-w-4xl line-clamp-2">
-                        请输入应用名称进行全球各区价格检索。系统将自动抓取实时汇率并展示最优订阅方案。
-                    </p>
-                </div>
-            </div>
+    <main class="max-w-[1200px] mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
+        <div id="globalLoader" class="hidden absolute inset-0 z-50 bg-white/40 backdrop-blur-sm flex items-center justify-center rounded-3xl">
+            <div class="loader"></div>
         </div>
 
-        <div class="flex flex-col md:flex-row justify-between items-end mb-4 gap-4">
-            <div class="flex gap-6 px-2">
-                <button class="pb-3 border-b-2 border-black font-bold text-[16px] text-black">套餐对比</button>
-                <button class="pb-3 border-b-2 border-transparent text-gray-400 font-medium text-[16px] hover:text-gray-600 transition">地区对比</button>
-            </div>
-            
-            <div class="flex items-center gap-2 bg-white/60 backdrop-blur border border-white px-3 py-1.5 rounded-xl shadow-sm cursor-pointer">
-                <span class="text-[18px]">🇨🇳</span>
-                <span class="text-sm font-bold text-gray-700">CNY</span>
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </div>
-        </div>
-
-        <div id="iapListContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-6 items-center">
-            <div class="text-sm text-gray-400 pl-2">输入应用名称后，此处将展示订阅项目...</div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
-            
-            <div id="globalLoader" class="hidden absolute inset-0 z-50 bg-white/50 backdrop-blur-sm rounded-[28px] flex items-center justify-center">
-                <div class="bg-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 font-medium text-sm">
-                    <div class="loader"></div> 正在比价...
+        <aside class="lg:col-span-4 space-y-6">
+            <div id="appHero" class="glass-card rounded-3xl p-6 flex items-center gap-5">
+                <div class="w-20 h-20 bg-gray-100 rounded-2xl flex-shrink-0 flex items-center justify-center text-gray-300">ICON</div>
+                <div>
+                    <h1 id="appName" class="text-xl font-bold">等待搜索...</h1>
+                    <p id="appDev" class="text-sm text-gray-400">输入名称获取数据</p>
                 </div>
             </div>
 
-            <div class="lg:col-span-8 glass-card rounded-[28px] bg-white overflow-hidden flex flex-col">
-                <div class="px-6 py-5 border-b border-gray-100 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                    <h2 id="tableTitle" class="font-bold text-[16px] text-gray-800">全球价格排位</h2>
+            <div class="glass-card rounded-3xl overflow-hidden">
+                <div class="flex border-b border-gray-100">
+                    <button onclick="switchMode('item')" id="modeItem" class="flex-1 py-4 text-sm font-medium active-tab">套餐对比</button>
+                    <button onclick="switchMode('region')" id="modeRegion" class="flex-1 py-4 text-sm font-medium text-gray-400">地区对比</button>
                 </div>
-                
-                <div class="flex-grow overflow-x-auto">
-                    <table class="w-full min-w-[500px]">
-                        <thead>
-                            <tr class="text-[12px] font-semibold text-gray-400 border-b border-gray-100">
-                                <th class="py-4 px-6 text-left w-16">排名</th>
-                                <th class="py-4 px-2 text-left">地区</th>
-                                <th class="py-4 px-2 text-right">原价</th>
-                                <th class="py-4 px-6 text-right">CNY</th>
-                                <th class="py-4 px-6 text-center w-24">状态 <span class="cursor-help">ⓘ</span></th>
-                            </tr>
-                        </thead>
-                        <tbody id="priceTable" class="text-[14px]">
-                            <tr><td colspan="5" class="py-12 text-center text-gray-400">请点击顶部查询按钮获取数据</td></tr>
-                        </tbody>
-                    </table>
+                <div id="listContainer" class="p-3 space-y-1 max-h-[500px] overflow-y-auto no-scrollbar">
+                    <p class="text-center text-gray-400 py-8 text-sm">请先搜索应用</p>
                 </div>
             </div>
+        </aside>
 
-            <div class="lg:col-span-4 space-y-6">
-                
-                <div class="bg-gradient-to-b from-[#f2fdf5] to-white border border-[#dcfce7] rounded-[28px] p-8 relative overflow-hidden shadow-sm">
-                    <div class="absolute top-4 right-4 bg-[#dcfce7] text-[#059669] text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-                        NEW
+        <section class="lg:col-span-8 space-y-6">
+            <div class="glass-card rounded-[32px] p-8 min-h-[500px]">
+                <div id="resultsHeader" class="mb-8">
+                    <h2 class="text-2xl font-black tracking-tight" id="resultTitle">欢迎使用 AppPrice</h2>
+                    <p class="text-sm text-gray-400 mt-1">请在左侧选择具体项目进行详细比价</p>
+                </div>
+
+                <div id="resultsList" class="space-y-4">
                     </div>
-                    
-                    <div class="text-center mt-2">
-                        <p class="text-[13px] font-medium text-gray-500 mb-1">当前项目最低价格</p>
-                        <h3 id="bestCny" class="text-[46px] font-black tracking-tight text-gray-900 leading-none mb-3">¥0.00</h3>
-                        
-                        <div class="flex items-center justify-center gap-2 mb-4">
-                            <div id="bestBadge" class="bg-[#10b981] text-white text-[12px] font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
-                                <span id="bestFlag" class="text-sm">🌍</span>
-                                <span id="bestName">等待计算</span>
-                            </div>
-                        </div>
-                        
-                        <p id="bestSaving" class="text-[13px] font-semibold text-[#059669] flex items-center justify-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                            等待检索数据...
-                        </p>
-                    </div>
-                </div>
-
-                <div class="glass-card rounded-[28px] p-6 bg-white">
-                    <h4 class="text-[12px] font-semibold text-gray-400 mb-4">价格阶梯分布</h4>
-                    <div id="chartContainer" class="space-y-3 opacity-50">
-                        <div class="flex items-center gap-2"><span class="w-6 text-[10px] text-gray-400">TR</span><div class="h-1.5 bg-[#10b981] rounded-full w-[30%]"></div></div>
-                        <div class="flex items-center gap-2"><span class="w-6 text-[10px] text-gray-400">PH</span><div class="h-1.5 bg-gray-200 rounded-full w-[50%]"></div></div>
-                        <div class="flex items-center gap-2"><span class="w-6 text-[10px] text-gray-400">US</span><div class="h-1.5 bg-gray-200 rounded-full w-[80%]"></div></div>
-                    </div>
-                </div>
-
             </div>
-        </div>
-
+        </section>
     </main>
-
-    <footer class="text-center py-6 text-[12px] text-gray-400 relative z-10">
-        © 2026 App Store Price. 保留所有权利 <span class="mx-2">|</span> 切换语言
-    </footer>
 
     <script>
         let currentData = null;
-        const REGION_MAP = { 
-            'us':{f:'🇺🇸', n:'美国'}, 'cn':{f:'🇨🇳', n:'中国'}, 'jp':{f:'🇯🇵', n:'日本'}, 
-            'tr':{f:'🇹🇷', n:'土耳其'}, 'ng':{f:'🇳🇬', n:'尼日利亚'}, 'eg':{f:'🇪🇬', n:'埃及'}, 
-            'pk':{f:'🇵🇰', n:'巴基斯坦'}, 'in':{f:'🇮🇳', n:'印度'}, 'br':{f:'🇧🇷', n:'巴西'}, 
-            'ar':{f:'🇦🇷', n:'阿根廷'}, 'ph':{f:'🇵🇭', n:'菲律宾'}, 'ca':{f:'🇨🇦', n:'加拿大'}
+        let viewMode = 'item'; // item 或 region
+        const HOT_APPS = ['ChatGPT', 'Spotify', 'Telegram', 'YouTube'];
+
+        window.onload = () => {
+            const container = document.getElementById('hotAppsList');
+            HOT_APPS.forEach(name => {
+                const btn = document.createElement('button');
+                btn.className = "hover:text-black transition";
+                btn.innerText = name;
+                btn.onclick = () => doSearch(name);
+                container.appendChild(btn);
+            });
         };
 
-        async function doSearch() {
-            const app = document.getElementById('searchInput').value.trim();
-            if(!app) return;
-
+        async function doSearch(name) {
             document.getElementById('globalLoader').classList.remove('hidden');
-
             try {
-                const res = await fetch(`/api/compare?app=${encodeURIComponent(app)}`);
+                const res = await fetch(`/api/compare?app=${encodeURIComponent(name)}`);
                 const json = await res.json();
-                document.getElementById('globalLoader').classList.add('hidden');
-
-                if (json.status === 'processing' || json.error) {
-                    alert(json.message || json.error);
-                    return;
-                }
-
                 currentData = json.data;
-                
-                // 渲染顶部 App 卡片
-                document.getElementById('appIconBox').innerHTML = `<img src="${currentData.app.icon}" class="w-full h-full object-cover">`;
-                document.getElementById('appNameTitle').innerText = currentData.app.name;
-                document.getElementById('appDevTitle').innerText = currentData.app.developer;
-
-                // 渲染内购 Pills
-                const items = Object.keys(currentData.compareData);
-                if (items.length === 0) {
-                    document.getElementById('iapListContainer').innerHTML = '<span class="text-sm text-gray-500 pl-2">未检索到内购项目。</span>';
-                    return;
-                }
-
-                let pillsHtml = '';
-                items.forEach((name, i) => {
-                    // 模拟截图中的蓝色小尾巴 (例如把 "1 Month" 变成蓝底小字)
-                    let displayName = name;
-                    let badgeHtml = '';
-                    const match = name.match(/\(?(1 Month|1 Year|1M|1Y)\)?$/i);
-                    if(match) {
-                        displayName = name.replace(match[0], '').trim();
-                        let shortText = match[1].replace(/Month/i, 'M').replace(/Year/i, 'Y').replace(/[\(\)]/g, '');
-                        badgeHtml = `<span class="text-[#0071e3] bg-[#0071e3]/10 px-1.5 py-0.5 rounded text-[10px] ml-1 font-bold">${shortText}</span>`;
-                    }
-
-                    const activeClass = i === 0 
-                        ? 'bg-white shadow-md border-transparent text-gray-900 font-bold' 
-                        : 'bg-transparent text-gray-500 font-medium hover:bg-white/50 border-transparent';
-                    
-                    pillsHtml += `
-                        <button onclick="showCompare('${name}', this)" class="iap-pill flex-shrink-0 flex items-center px-5 py-2.5 rounded-full border text-[13px] transition-all cursor-pointer ${activeClass}">
-                            ${displayName} ${badgeHtml}
-                        </button>
-                    `;
-                });
-                document.getElementById('iapListContainer').innerHTML = pillsHtml;
-                showCompare(items[0], document.querySelector('.iap-pill'));
-
-            } catch (e) {
+                renderBaseInfo();
+                renderList();
+            } finally {
                 document.getElementById('globalLoader').classList.add('hidden');
-                alert('网络请求失败，请稍后重试');
             }
         }
 
-        function showCompare(itemName, el) {
-            // UI 切换状态
-            if (el) {
-                document.querySelectorAll('.iap-pill').forEach(i => {
-                    i.className = 'iap-pill flex-shrink-0 flex items-center px-5 py-2.5 rounded-full border text-[13px] transition-all cursor-pointer bg-transparent text-gray-500 font-medium hover:bg-white/50 border-transparent';
-                });
-                el.className = 'iap-pill flex-shrink-0 flex items-center px-5 py-2.5 rounded-full border text-[13px] transition-all cursor-pointer bg-white shadow-md border-transparent text-gray-900 font-bold';
-            }
+        function renderBaseInfo() {
+            document.getElementById('appHero').innerHTML = `
+                <img src="${currentData.app.icon}" class="w-20 h-20 rounded-2xl shadow-lg border border-white">
+                <div>
+                    <h1 class="text-xl font-bold">${currentData.app.name}</h1>
+                    <p class="text-sm text-gray-400">${currentData.app.developer}</p>
+                </div>
+            `;
+        }
 
-            document.getElementById('tableTitle').innerText = `${itemName} 全球价格`;
+        function switchMode(mode) {
+            viewMode = mode;
+            document.getElementById('modeItem').className = mode === 'item' ? 'flex-1 py-4 text-sm font-medium active-tab' : 'flex-1 py-4 text-sm font-medium text-gray-400';
+            document.getElementById('modeRegion').className = mode === 'region' ? 'flex-1 py-4 text-sm font-medium active-tab' : 'flex-1 py-4 text-sm font-medium text-gray-400';
+            renderList();
+        }
 
-            const list = currentData.compareData[itemName];
-            if(!list || list.length === 0) return;
-
-            // 渲染高亮卡片 (右侧)
-            const best = list[0];
-            const highest = list[list.length - 1]; // 用于计算节省比例
-            const bInfo = REGION_MAP[best.regionCode.toLowerCase()] || {f:'🌍', n:best.regionName};
+        function renderList() {
+            if(!currentData) return;
+            const container = document.getElementById('listContainer');
+            container.innerHTML = '';
             
-            document.getElementById('bestCny').innerText = `¥${best.cnyPrice.toFixed(2)}`;
-            document.getElementById('bestFlag').innerText = bInfo.f;
-            document.getElementById('bestName').innerText = bInfo.n;
-            
-            if(highest && highest.cnyPrice > 0) {
-                const savePercent = Math.round(((highest.cnyPrice - best.cnyPrice) / highest.cnyPrice) * 100);
-                document.getElementById('bestSaving').innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg> 比最高价省 ${savePercent}%`;
-            } else {
-                document.getElementById('bestSaving').innerText = '当前全网最低';
-            }
+            const dataSource = viewMode === 'item' ? currentData.compareData.byItem : currentData.compareData.byRegion;
+            const keys = Object.keys(dataSource);
 
-            // 渲染表格 (左侧)
-            let tableHtml = '';
-            let chartHtml = '';
-            
-            list.forEach((item, idx) => {
-                const info = REGION_MAP[item.regionCode.toLowerCase()] || {f:'🌍', n:item.regionName};
-                
-                // 表格行
-                tableHtml += `
-                <tr class="border-b border-gray-50 hover:bg-gray-50 transition group">
-                    <td class="py-4 px-6 text-gray-300 font-medium">${idx+1}</td>
-                    <td class="py-4 px-2 flex items-center gap-2">
-                        <span class="text-xl">${info.f}</span>
-                        <span class="font-medium text-gray-800 group-hover:text-black">${info.n}</span>
-                    </td>
-                    <td class="py-4 px-2 text-right text-gray-400 text-[12px] uppercase font-mono">${item.originalPrice}</td>
-                    <td class="py-4 px-6 text-right font-bold ${idx===0 ? 'text-[#10b981]' : 'text-gray-900'}">¥${item.cnyPrice.toFixed(2)}</td>
-                    <td class="py-4 px-6 text-center">
-                        ${idx === 0 ? '<span class="bg-[#dcfce7] text-[#059669] px-2 py-1 rounded text-[11px] font-bold">最低</span>' : ''}
-                    </td>
-                </tr>`;
-
-                // 顺便生成迷你分布图 (最多显示前5个)
-                if(idx < 5 && highest.cnyPrice > 0) {
-                    const widthPct = Math.max(10, (item.cnyPrice / highest.cnyPrice) * 100);
-                    const colorClass = idx === 0 ? 'bg-[#10b981]' : 'bg-gray-200';
-                    chartHtml += `<div class="flex items-center gap-2"><span class="w-6 text-[10px] text-gray-400 font-bold uppercase">${item.regionCode}</span><div class="h-1.5 ${colorClass} rounded-full" style="width: ${widthPct}%"></div></div>`;
-                }
+            keys.forEach((key, index) => {
+                const item = dataSource[key];
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-2xl cursor-pointer transition flex justify-between items-center ${index === 0 ? 'bg-black text-white' : 'hover:bg-gray-100'}`;
+                div.innerHTML = `
+                    <span class="text-sm font-bold">${viewMode === 'item' ? key : (item.flag + ' ' + item.name)}</span>
+                    <svg class="w-4 h-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+                `;
+                div.onclick = () => renderDetails(key);
+                container.appendChild(div);
             });
+            renderDetails(keys[0]);
+        }
+
+        function renderDetails(key) {
+            const container = document.getElementById('resultsList');
+            container.innerHTML = '';
+            const data = viewMode === 'item' ? currentData.compareData.byItem[key] : currentData.compareData.byRegion[key].iaps;
             
-            document.getElementById('priceTable').innerHTML = tableHtml;
-            document.getElementById('chartContainer').innerHTML = chartHtml;
-            document.getElementById('chartContainer').classList.remove('opacity-50');
+            document.getElementById('resultTitle').innerText = viewMode === 'item' ? `「${key}」全球比价` : `「${currentData.compareData.byRegion[key].name}」内购全览`;
+
+            data.forEach((row, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-5 bg-gray-50/50 rounded-2xl hover:bg-white hover:shadow-sm transition border border-transparent hover:border-gray-100";
+                
+                if(viewMode === 'item') {
+                    div.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <span class="text-gray-300 font-black">${idx+1}</span>
+                            <span class="text-xl">${getFlag(row.regionCode)}</span>
+                            <span class="font-bold">${row.regionName}</span>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-black text-blue-600">¥${row.cnyPrice}</p>
+                            <p class="text-xs text-gray-400">${row.originalPrice}</p>
+                        </div>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <span class="font-bold">${row.name}</span>
+                        <div class="text-right">
+                            <p class="font-black">¥${row.cnyPrice}</p>
+                            <p class="text-xs text-gray-400">${row.originalPrice}</p>
+                        </div>
+                    `;
+                }
+                container.appendChild(div);
+            });
+        }
+
+        function getFlag(code) {
+            const flags = {'us':'🇺🇸','cn':'🇨🇳','jp':'🇯🇵','tr':'🇹🇷','ng':'🇳🇬','eg':'🇪🇬','pk':'🇵🇰','in':'🇮🇳','br':'🇧🇷','ar':'🇦🇷'};
+            return flags[code.toLowerCase()] || '🌍';
         }
     </script>
 </body>
