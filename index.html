@@ -21,7 +21,6 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 加厚版毛玻璃，防止文字顶穿 */
         .apple-nav {
             background: rgba(245, 245, 247, 0.92);
             backdrop-filter: saturate(200%) blur(24px);
@@ -43,7 +42,7 @@
 
     <header class="apple-nav fixed top-0 w-full z-50 pt-[env(safe-area-inset-top)]">
         <div class="max-w-[1000px] mx-auto px-4 h-14 flex justify-between items-center">
-            <div class="flex items-center gap-2 font-semibold text-[17px] tracking-tight cursor-pointer hover:opacity-70 transition flex-shrink-0" onclick="location.reload()">
+            <div class="flex items-center gap-2 font-semibold text-[17px] tracking-tight cursor-pointer hover:opacity-70 transition flex-shrink-0" onclick="goHome()">
                 <svg class="w-5 h-5 text-black hidden md:block" viewBox="0 0 170 170"><path fill="currentColor" d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.92.21-9.84-1.96-14.75-6.53-3.13-2.73-7.1-7.43-11.9-14.1-5.97-8.24-10.71-17.93-14.21-29.08-3.69-11.53-5.54-22.39-5.54-32.58 0-14.61 4.05-26.35 12.16-35.25 5.6-6.14 12.44-9.36 20.53-9.66 4.69-.2 9.9 1.48 15.65 5.04 5.75 3.56 9.61 5.34 11.57 5.34 1.7 0 5.86-1.93 12.48-5.78 6.62-3.85 12.38-5.57 17.26-5.15 10.95.84 19.5 4.8 25.66 11.88-9.86 5.86-14.68 13.92-14.46 24.16.23 9.4 3.65 17.13 10.28 23.21 4.75 4.3 10.39 7.02 16.92 8.16-2.58 7.37-5.69 14.34-9.33 20.89zm-38.62-113.6c-4.47 4.54-10.05 7.15-16.74 7.82-.56-6.57 1.83-12.63 7.17-18.17 4.31-4.45 9.81-7.11 16.48-7.97.66 6.84-1.84 12.95-6.91 18.32z"/></svg>
                 AppPrice
             </div>
@@ -69,11 +68,13 @@
             <p class="text-[14px] font-medium text-gray-500">正在连接全球 App Store...</p>
         </div>
 
-        <div id="homeView" class="animate-fade-in">
+        <div id="homeView" class="animate-fade-in block">
             <h4 class="text-gray-500 font-semibold text-[13px] uppercase tracking-widest mb-1" id="todayDate">TODAY</h4>
             <div class="flex justify-between items-end mb-8">
                 <h1 class="text-[34px] font-bold tracking-tight leading-none">Today</h1>
-                <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-80"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User"></div>
+                <div onclick="openAccountModal()" class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-80 shadow-sm border border-black/5">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="w-full h-full object-cover">
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="appGrid">
@@ -82,13 +83,18 @@
 
         <div id="detailView" class="hidden animate-fade-in">
             
+            <button onclick="goHome()" class="flex items-center gap-1.5 text-[#0071e3] font-semibold text-[16px] mb-6 hover:opacity-80 transition cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                Today
+            </button>
+
             <div class="bg-white rounded-[24px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-black/5 mb-8 flex items-center gap-4 transition-all">
                 <img id="detailIcon" src="" class="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[16px] md:rounded-[18px] border border-black/5 flex-shrink-0 object-cover shadow-sm bg-gray-100">
                 <div class="flex-grow overflow-hidden">
                     <h1 id="detailName" class="text-[18px] md:text-[20px] font-bold text-[#1d1d1f] tracking-tight truncate leading-tight">加载中...</h1>
                     <p id="detailDev" class="text-[13px] md:text-[14px] text-gray-500 truncate mt-0.5">Developer</p>
                 </div>
-                <button class="bg-[#0071e3] text-white font-bold text-[14px] px-5 py-1.5 rounded-full flex-shrink-0 hover:bg-blue-600 transition shadow-sm">获取</button>
+                <button onclick="openAccountModal()" class="bg-[#0071e3] text-white font-bold text-[14px] px-5 py-1.5 rounded-full flex-shrink-0 hover:bg-blue-600 transition shadow-sm">获取</button>
             </div>
 
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -134,7 +140,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-[20px] p-5 border border-gray-200 flex items-start gap-4 cursor-pointer hover:bg-gray-50 transition shadow-sm">
+                    <div onclick="openAccountModal()" class="bg-white rounded-[20px] p-5 border border-gray-200 flex items-start gap-4 cursor-pointer hover:bg-gray-50 transition shadow-sm">
                         <div class="w-10 h-10 bg-blue-50 text-[#0071e3] rounded-full flex items-center justify-center flex-shrink-0">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         </div>
@@ -147,6 +153,39 @@
             </div>
         </div>
 
+        <div id="accountModal" class="hidden fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex flex-col justify-end md:justify-center items-center md:px-4 pb-8 md:pb-0 transition-opacity">
+            <div class="bg-white w-full max-w-sm md:rounded-[28px] rounded-t-[28px] p-8 text-center shadow-2xl relative">
+                <button onclick="document.getElementById('accountModal').classList.add('hidden')" class="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <div class="w-[72px] h-[72px] bg-gray-100 border border-black/5 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full object-cover">
+                </div>
+                <h3 class="text-[22px] font-bold tracking-tight text-[#1d1d1f] mb-1">我的账户</h3>
+                <p class="text-[13px] text-gray-500 mb-8">免费游客模式</p>
+
+                <div class="space-y-3 mb-2 text-left">
+                    <button class="w-full bg-[#f5f5f7] hover:bg-[#ebebf0] text-[#1d1d1f] font-semibold py-3.5 rounded-[16px] flex items-center justify-between px-5 transition">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">💬</span>
+                            <span class="text-[15px]">获取低价区 Apple ID</span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                    <button class="w-full bg-[#f5f5f7] hover:bg-[#ebebf0] text-[#1d1d1f] font-semibold py-3.5 rounded-[16px] flex items-center justify-between px-5 transition">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">⚙️</span>
+                            <span class="text-[15px]">切换基准汇率 (CNY)</span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+                <button class="w-full mt-4 bg-[#0071e3] text-white font-bold py-3.5 rounded-[16px] shadow-sm hover:bg-blue-600 transition">
+                    解锁全站搜索权限
+                </button>
+            </div>
+        </div>
+
         <div id="vipPrompt" class="hidden fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
             <div class="bg-white w-full max-w-sm rounded-[28px] p-8 text-center shadow-2xl">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-5 text-[#0071e3]">
@@ -154,7 +193,7 @@
                 </div>
                 <h3 class="text-[20px] font-bold mb-2 tracking-tight">应用暂未收录</h3>
                 <p id="vipMsg" class="text-[14px] text-gray-500 mb-8 leading-relaxed">该应用暂不支持免费查询。</p>
-                <button onclick="location.reload()" class="w-full bg-[#0071e3] text-white font-bold py-3.5 rounded-xl mb-3 hover:bg-blue-600 transition shadow-md">升级 VIP 解锁全网检索</button>
+                <button onclick="openAccountModal(); document.getElementById('vipPrompt').classList.add('hidden');" class="w-full bg-[#0071e3] text-white font-bold py-3.5 rounded-xl mb-3 hover:bg-blue-600 transition shadow-md">升级 VIP 解锁全网检索</button>
                 <button onclick="document.getElementById('vipPrompt').classList.add('hidden')" class="w-full text-[#0071e3] text-[14px] font-semibold py-2">取消</button>
             </div>
         </div>
@@ -164,7 +203,6 @@
     <script>
         document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
 
-        // 首页结构，图标和名字将由客户端直连苹果接口实时拉取，永不裂图！
         const HOT_APPS = [
             { id:'6448311069', bg: 'from-green-400 to-emerald-600', tag: 'AI TOOL' },
             { id:'324684580', bg: 'from-gray-800 to-black', tag: 'MUSIC' },
@@ -175,7 +213,6 @@
         window.onload = async () => {
             const grid = document.getElementById('appGrid');
             HOT_APPS.forEach(app => {
-                // 先注入漂亮的骨架卡片
                 grid.innerHTML += `
                     <div id="card-${app.id}" onclick="doSearch('${app.id}')" class="today-card relative h-[280px] rounded-[28px] overflow-hidden cursor-pointer bg-gradient-to-br ${app.bg} text-white p-6 flex flex-col justify-between shadow-sm">
                         <div>
@@ -193,7 +230,6 @@
                     </div>`;
             });
 
-            // 实时去苹果查最新的图标和名字
             try {
                 const ids = HOT_APPS.map(a => a.id).join(',');
                 const res = await fetch(`https://itunes.apple.com/lookup?id=${ids}&country=cn`);
@@ -211,7 +247,19 @@
             } catch(e) { console.log('Home page icons fetch failed'); }
         };
 
-        // ================= 🔍 官方联想词逻辑 =================
+        // ================= 返回大厅与打开个人中心交互 =================
+        function goHome() {
+            document.getElementById('detailView').classList.add('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            document.getElementById('searchInput').value = ''; 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openAccountModal() {
+            document.getElementById('accountModal').classList.remove('hidden');
+        }
+
+        // ================= 极速联想词逻辑 =================
         const searchInput = document.getElementById('searchInput');
         const searchBox = document.getElementById('searchSuggestions');
         let searchTimeout;
@@ -258,7 +306,6 @@
             searchBox.classList.add('hidden');
             doSearch(appId);
         }
-        // ==========================================================
 
         let currentData = null;
         let viewMode = 'item'; 
@@ -271,9 +318,8 @@
 
             document.getElementById('globalLoader').classList.remove('hidden');
             try {
-                // 🚀 并发请求：后端查价格的同时，前端直接去苹果接口拿最新的高清大图！
                 let itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(app)}&limit=1&country=cn&entity=software`;
-                if (/^\d+$/.test(app)) itunesUrl = `https://itunes.apple.com/lookup?id=${app}&country=cn`; // 如果是数字ID，直接 Lookup
+                if (/^\d+$/.test(app)) itunesUrl = `https://itunes.apple.com/lookup?id=${app}&country=cn`; 
 
                 const [priceRes, itunesRes] = await Promise.all([
                     fetch(`/api/compare?app=${encodeURIComponent(app)}`),
@@ -292,11 +338,10 @@
 
                 currentData = json.data;
 
-                // 用刚查到的苹果官方高清数据，覆盖掉后端可能过期的写死数据
                 try {
                     const itunesData = await itunesRes.json();
                     if(itunesData.results && itunesData.results.length > 0) {
-                        currentData.app.icon = itunesData.results[0].artworkUrl100; // 高清图
+                        currentData.app.icon = itunesData.results[0].artworkUrl100; 
                         currentData.app.name = itunesData.results[0].trackName;
                         currentData.app.developer = itunesData.results[0].artistName;
                     }
@@ -306,7 +351,6 @@
                 document.getElementById('detailView').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                // 填充一长溜的 Banner 头部
                 document.getElementById('detailIcon').src = currentData.app.icon;
                 document.getElementById('detailName').innerText = currentData.app.name;
                 document.getElementById('detailDev').innerText = currentData.app.developer;
