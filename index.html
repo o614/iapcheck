@@ -3,180 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>AppPrice - 全球比价看板 Pro</title>
+    <title>AppPrice - 现代全球比价</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #eff6ff 100%); background-attachment: fixed; }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #e6eeff 0%, #f4e8ff 50%, #f0f7ff 100%); background-attachment: fixed; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .active-tab { border-bottom: 2px solid #000; color: #000; font-weight: 700; }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #0071e3; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #10b981; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="text-gray-900 antialiased min-h-screen">
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
-    <header class="w-full max-w-[1200px] mx-auto px-4 pt-6 pb-2 flex justify-between items-center">
-        <div class="flex items-center gap-2 font-bold text-xl cursor-pointer" onclick="location.reload()">
+    <header class="w-full max-w-[1200px] mx-auto px-4 pt-6 pb-2 flex justify-between items-center relative z-20">
+        <div class="flex items-center gap-2 font-bold text-xl tracking-tight cursor-pointer" onclick="location.reload()">
             <div class="w-8 h-8 bg-black text-white rounded-xl flex items-center justify-center text-sm">P</div>
             AppPrice
         </div>
-        <div class="flex-grow max-w-md mx-8 relative">
-            <input type="text" id="searchInput" placeholder="搜索应用..." class="w-full bg-white/60 border border-white rounded-full py-2 px-10 text-sm outline-none focus:bg-white transition shadow-sm" onkeypress="if(event.key === 'Enter') doSearch(this.value)">
-            <svg class="w-4 h-4 absolute left-4 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        
+        <div class="hidden md:flex bg-white/60 backdrop-blur-md border border-white rounded-full p-1 shadow-sm items-center px-4">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="searchInput" placeholder="搜索应用名称或ID..." class="w-48 bg-transparent border-none pl-2 py-1.5 text-sm outline-none focus:w-64 transition-all" onkeypress="if(event.key === 'Enter') doSearch(this.value)">
         </div>
-        <div class="hidden md:flex items-center gap-4 text-xs font-bold text-gray-400">
-            <span class="text-blue-500">HOT APPS 🔥</span>
-            <div id="hotAppsList" class="flex gap-3"></div>
+
+        <div class="flex items-center gap-4">
+            <button class="bg-[#0071e3] text-white text-xs font-bold px-4 py-1.5 rounded-full shadow hover:bg-blue-600 transition">升级 VIP</button>
         </div>
     </header>
 
-    <main class="max-w-[1200px] mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
-        <div id="globalLoader" class="hidden absolute inset-0 z-50 bg-white/40 backdrop-blur-sm flex items-center justify-center rounded-3xl">
-            <div class="loader"></div>
+    <main class="w-full max-w-[1200px] mx-auto px-4 pb-12 flex-grow relative z-10">
+        
+        <div class="glass-card rounded-[28px] p-6 md:p-8 mt-4 mb-8 relative overflow-hidden" id="heroArea">
+            <div id="defaultMarket">
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">🔥 本周收录 Core Apps</h1>
+                <p class="text-sm text-gray-500 mb-6">点击下方热门应用，一键透视全球 10 国汇率底价。</p>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="appGrid"></div>
+            </div>
+
+            <div id="appDetail" class="hidden flex flex-col md:flex-row gap-6 items-start">
+                <div id="appIconBox" class="w-24 h-24 rounded-[22px] bg-white shadow-sm border border-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden"></div>
+                <div class="flex-grow">
+                    <h1 id="appNameTitle" class="text-3xl font-bold text-gray-900 tracking-tight">App Name</h1>
+                    <p class="text-sm text-gray-500 mt-2 flex items-center gap-2">
+                        <span id="appDevTitle">Developer Info</span>
+                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                        <span class="font-semibold text-blue-500">已收录全区数据</span>
+                    </p>
+                    <button onclick="location.reload()" class="mt-4 text-[12px] bg-gray-100 px-3 py-1 rounded-md text-gray-600 hover:bg-gray-200">← 返回大厅</button>
+                </div>
+            </div>
         </div>
 
-        <aside class="lg:col-span-4 space-y-6">
-            <div id="appHero" class="glass-card rounded-3xl p-6 flex items-center gap-5">
-                <div class="w-20 h-20 bg-gray-100 rounded-2xl flex-shrink-0 flex items-center justify-center text-gray-300">ICON</div>
-                <div>
-                    <h1 id="appName" class="text-xl font-bold">等待搜索...</h1>
-                    <p id="appDev" class="text-sm text-gray-400">输入名称获取数据</p>
+        <div id="compareArea" class="hidden">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-4 gap-4">
+                <div class="flex gap-6 px-2">
+                    <button onclick="switchMode('item')" id="tabItem" class="pb-3 border-b-2 border-black font-bold text-[16px] text-black">套餐对比</button>
+                    <button onclick="switchMode('region')" id="tabRegion" class="pb-3 border-b-2 border-transparent text-gray-400 font-medium text-[16px] hover:text-gray-600 transition">地区对比</button>
                 </div>
             </div>
 
-            <div class="glass-card rounded-3xl overflow-hidden">
-                <div class="flex border-b border-gray-100">
-                    <button onclick="switchMode('item')" id="modeItem" class="flex-1 py-4 text-sm font-medium active-tab">套餐对比</button>
-                    <button onclick="switchMode('region')" id="modeRegion" class="flex-1 py-4 text-sm font-medium text-gray-400">地区对比</button>
-                </div>
-                <div id="listContainer" class="p-3 space-y-1 max-h-[500px] overflow-y-auto no-scrollbar">
-                    <p class="text-center text-gray-400 py-8 text-sm">请先搜索应用</p>
-                </div>
-            </div>
-        </aside>
+            <div id="iapListContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-6 items-center"></div>
 
-        <section class="lg:col-span-8 space-y-6">
-            <div class="glass-card rounded-[32px] p-8 min-h-[500px]">
-                <div id="resultsHeader" class="mb-8">
-                    <h2 class="text-2xl font-black tracking-tight" id="resultTitle">欢迎使用 AppPrice</h2>
-                    <p class="text-sm text-gray-400 mt-1">请在左侧选择具体项目进行详细比价</p>
-                </div>
-
-                <div id="resultsList" class="space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+                <div class="lg:col-span-8 glass-card rounded-[28px] bg-white overflow-hidden flex flex-col">
+                    <div class="px-6 py-5 border-b border-gray-100 flex items-center gap-2">
+                        <h2 id="tableTitle" class="font-bold text-[16px] text-gray-800">全球价格排位</h2>
                     </div>
+                    <div class="flex-grow overflow-x-auto">
+                        <table class="w-full min-w-[500px]">
+                            <thead>
+                                <tr class="text-[12px] font-semibold text-gray-400 border-b border-gray-100">
+                                    <th class="py-4 px-6 text-left w-16">排名</th>
+                                    <th class="py-4 px-2 text-left">地区</th>
+                                    <th class="py-4 px-2 text-right">原价</th>
+                                    <th class="py-4 px-6 text-right">CNY</th>
+                                </tr>
+                            </thead>
+                            <tbody id="priceTable" class="text-[14px]"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="bg-gradient-to-b from-[#f2fdf5] to-white border border-[#dcfce7] rounded-[28px] p-8 relative overflow-hidden shadow-sm">
+                        <div class="absolute top-4 right-4 bg-[#dcfce7] text-[#059669] text-[10px] font-bold px-2.5 py-1 rounded-md">最优选择</div>
+                        <div class="text-center mt-2">
+                            <p class="text-[13px] font-medium text-gray-500 mb-1">最低折合人民币</p>
+                            <h3 id="bestCny" class="text-[46px] font-black tracking-tight text-gray-900 leading-none mb-3">¥0.00</h3>
+                            <div class="flex justify-center mb-4"><div id="bestBadge" class="bg-[#10b981] text-white text-[12px] font-bold px-3 py-1 rounded-full shadow-sm">🌍 等待</div></div>
+                            <p id="bestSaving" class="text-[13px] font-semibold text-[#059669]"></p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
+
+        <div id="vipPrompt" class="hidden absolute inset-0 z-50 bg-white/60 backdrop-blur-md rounded-[28px] flex flex-col items-center justify-center p-6 text-center">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">该应用暂未收录</h2>
+            <p id="vipMsg" class="text-gray-500 max-w-md mb-6">普通用户仅支持查询推荐库内的应用。</p>
+            <button onclick="location.reload()" class="bg-[#0071e3] text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-600 transition">了解 VIP 权限并解锁</button>
+            <button onclick="document.getElementById('vipPrompt').classList.add('hidden')" class="mt-4 text-sm text-gray-400 underline">先看看免费区</button>
+        </div>
+
+        <div id="globalLoader" class="hidden absolute inset-0 z-50 bg-white/40 backdrop-blur-sm flex items-center justify-center rounded-[28px]">
+            <div class="loader"></div>
+        </div>
     </main>
 
     <script>
+        // 内置的 10 个热门数据（为了让首页一打开就有东西）
+        const HOT_APPS = [
+            { id:'6448311069', name:'ChatGPT', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/95/9b/a6/959ba6d5-4523-bd77-0d92-ec7f3ca69db0/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/100x100bb.jpg' },
+            { id:'324684580', name:'Spotify', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/21/ee/ff/21eeffb0-bd5b-5942-5fba-03619ea019a8/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.jpg' },
+            { id:'686449807', name:'Telegram', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a4/09/b3/a409b30c-2559-994c-8bb2-f8cce06c9a93/AppIcon-1x_U007emarketing-0-7-0-85-220.png/100x100bb.jpg' },
+            { id:'364709193', name:'Netflix', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/80/7e/ab/807eab79-11ba-b2cb-4235-ef6daeeb8e86/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.jpg' },
+            { id:'897362505', name:'Canva', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/cd/66/ec/cd66ecc9-e6ce-4680-e837-a169b1227091/AppIcon-1x_U007emarketing-0-7-0-85-220.png/100x100bb.jpg' }
+        ];
+
         let currentData = null;
-        let viewMode = 'item'; // item 或 region
-        const HOT_APPS = ['ChatGPT', 'Spotify', 'Telegram', 'YouTube'];
+        let viewMode = 'item'; // item = 按项目, region = 按国家
+        const REGION_MAP = { 'us':{f:'🇺🇸',n:'美国'}, 'cn':{f:'🇨🇳',n:'中国'}, 'jp':{f:'🇯🇵',n:'日本'}, 'tr':{f:'🇹🇷',n:'土耳其'}, 'ng':{f:'🇳🇬',n:'尼日利亚'}, 'eg':{f:'🇪🇬',n:'埃及'}, 'pk':{f:'🇵🇰',n:'巴基斯坦'}, 'in':{f:'🇮🇳',n:'印度'}, 'br':{f:'🇧🇷',n:'巴西'}, 'ar':{f:'🇦🇷',n:'阿根廷'} };
 
         window.onload = () => {
-            const container = document.getElementById('hotAppsList');
-            HOT_APPS.forEach(name => {
-                const btn = document.createElement('button');
-                btn.className = "hover:text-black transition";
-                btn.innerText = name;
-                btn.onclick = () => doSearch(name);
-                container.appendChild(btn);
+            const grid = document.getElementById('appGrid');
+            HOT_APPS.forEach(app => {
+                grid.innerHTML += `
+                    <div onclick="doSearch('${app.id}')" class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition hover:-translate-y-1">
+                        <img src="${app.icon}" class="w-12 h-12 rounded-[10px] mb-2">
+                        <span class="text-[13px] font-bold text-gray-800">${app.name}</span>
+                    </div>`;
             });
         };
 
-        async function doSearch(name) {
+        async function doSearch(query) {
+            const app = query || document.getElementById('searchInput').value.trim();
+            if(!app) return;
+
             document.getElementById('globalLoader').classList.remove('hidden');
             try {
-                const res = await fetch(`/api/compare?app=${encodeURIComponent(name)}`);
+                const res = await fetch(`/api/compare?app=${encodeURIComponent(app)}`);
                 const json = await res.json();
-                currentData = json.data;
-                renderBaseInfo();
-                renderList();
-            } finally {
                 document.getElementById('globalLoader').classList.add('hidden');
-            }
-        }
 
-        function renderBaseInfo() {
-            document.getElementById('appHero').innerHTML = `
-                <img src="${currentData.app.icon}" class="w-20 h-20 rounded-2xl shadow-lg border border-white">
-                <div>
-                    <h1 class="text-xl font-bold">${currentData.app.name}</h1>
-                    <p class="text-sm text-gray-400">${currentData.app.developer}</p>
-                </div>
-            `;
+                if (json.isVipPrompt) {
+                    document.getElementById('vipMsg').innerText = json.message;
+                    document.getElementById('vipPrompt').classList.remove('hidden');
+                    return;
+                }
+                if (json.error) return alert(json.message || json.error);
+
+                currentData = json.data;
+                
+                // 切换到详情视图
+                document.getElementById('defaultMarket').classList.add('hidden');
+                document.getElementById('appDetail').classList.remove('hidden');
+                document.getElementById('compareArea').classList.remove('hidden');
+
+                document.getElementById('appIconBox').innerHTML = `<img src="${currentData.app.icon}" class="w-full h-full object-cover">`;
+                document.getElementById('appNameTitle').innerText = currentData.app.name;
+                document.getElementById('appDevTitle').innerText = currentData.app.developer;
+
+                switchMode('item'); // 默认按项目比价
+            } catch (e) {
+                document.getElementById('globalLoader').classList.add('hidden');
+                alert('网络异常');
+            }
         }
 
         function switchMode(mode) {
             viewMode = mode;
-            document.getElementById('modeItem').className = mode === 'item' ? 'flex-1 py-4 text-sm font-medium active-tab' : 'flex-1 py-4 text-sm font-medium text-gray-400';
-            document.getElementById('modeRegion').className = mode === 'region' ? 'flex-1 py-4 text-sm font-medium active-tab' : 'flex-1 py-4 text-sm font-medium text-gray-400';
-            renderList();
-        }
-
-        function renderList() {
-            if(!currentData) return;
-            const container = document.getElementById('listContainer');
-            container.innerHTML = '';
+            document.getElementById('tabItem').className = mode === 'item' ? 'pb-3 border-b-2 border-black font-bold text-[16px] text-black' : 'pb-3 border-b-2 border-transparent text-gray-400 font-medium text-[16px] hover:text-gray-600';
+            document.getElementById('tabRegion').className = mode === 'region' ? 'pb-3 border-b-2 border-black font-bold text-[16px] text-black' : 'pb-3 border-b-2 border-transparent text-gray-400 font-medium text-[16px] hover:text-gray-600';
             
-            const dataSource = viewMode === 'item' ? currentData.compareData.byItem : currentData.compareData.byRegion;
+            const dataSource = mode === 'item' ? currentData.compareData.byItem : currentData.compareData.byRegion;
             const keys = Object.keys(dataSource);
-
-            keys.forEach((key, index) => {
-                const item = dataSource[key];
-                const div = document.createElement('div');
-                div.className = `p-4 rounded-2xl cursor-pointer transition flex justify-between items-center ${index === 0 ? 'bg-black text-white' : 'hover:bg-gray-100'}`;
-                div.innerHTML = `
-                    <span class="text-sm font-bold">${viewMode === 'item' ? key : (item.flag + ' ' + item.name)}</span>
-                    <svg class="w-4 h-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
-                `;
-                div.onclick = () => renderDetails(key);
-                container.appendChild(div);
-            });
-            renderDetails(keys[0]);
-        }
-
-        function renderDetails(key) {
-            const container = document.getElementById('resultsList');
-            container.innerHTML = '';
-            const data = viewMode === 'item' ? currentData.compareData.byItem[key] : currentData.compareData.byRegion[key].iaps;
             
-            document.getElementById('resultTitle').innerText = viewMode === 'item' ? `「${key}」全球比价` : `「${currentData.compareData.byRegion[key].name}」内购全览`;
+            if (keys.length === 0) {
+                document.getElementById('iapListContainer').innerHTML = '<span class="text-sm text-gray-500 pl-2">无内购数据</span>';
+                return;
+            }
 
-            data.forEach((row, idx) => {
-                const div = document.createElement('div');
-                div.className = "flex items-center justify-between p-5 bg-gray-50/50 rounded-2xl hover:bg-white hover:shadow-sm transition border border-transparent hover:border-gray-100";
-                
-                if(viewMode === 'item') {
-                    div.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <span class="text-gray-300 font-black">${idx+1}</span>
-                            <span class="text-xl">${getFlag(row.regionCode)}</span>
-                            <span class="font-bold">${row.regionName}</span>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-lg font-black text-blue-600">¥${row.cnyPrice}</p>
-                            <p class="text-xs text-gray-400">${row.originalPrice}</p>
-                        </div>
-                    `;
-                } else {
-                    div.innerHTML = `
-                        <span class="font-bold">${row.name}</span>
-                        <div class="text-right">
-                            <p class="font-black">¥${row.cnyPrice}</p>
-                            <p class="text-xs text-gray-400">${row.originalPrice}</p>
-                        </div>
-                    `;
-                }
-                container.appendChild(div);
+            let pillsHtml = '';
+            keys.forEach((key, i) => {
+                const displayName = mode === 'item' ? key : (REGION_MAP[key]?.f + ' ' + dataSource[key].name);
+                pillsHtml += `<button onclick="renderTable('${key}', this)" class="iap-pill flex-shrink-0 px-5 py-2.5 rounded-full border text-[13px] transition-all cursor-pointer ${i===0?'bg-white shadow border-transparent text-black font-bold':'bg-transparent text-gray-500 hover:bg-white/50 border-transparent'}">${displayName}</button>`;
             });
+            document.getElementById('iapListContainer').innerHTML = pillsHtml;
+            renderTable(keys[0], document.querySelector('.iap-pill'));
         }
 
-        function getFlag(code) {
-            const flags = {'us':'🇺🇸','cn':'🇨🇳','jp':'🇯🇵','tr':'🇹🇷','ng':'🇳🇬','eg':'🇪🇬','pk':'🇵🇰','in':'🇮🇳','br':'🇧🇷','ar':'🇦🇷'};
-            return flags[code.toLowerCase()] || '🌍';
+        function renderTable(key, el) {
+            if (el) {
+                document.querySelectorAll('.iap-pill').forEach(i => i.className = 'iap-pill flex-shrink-0 px-5 py-2.5 rounded-full border text-[13px] transition-all cursor-pointer bg-transparent text-gray-500 hover:bg-white/50 border-transparent');
+                el.className = 'iap-pill flex-shrink-0 px-5 py-2.5 rounded-full border text-[13px] transition-all cursor-pointer bg-white shadow border-transparent text-black font-bold';
+            }
+
+            const isItemMode = viewMode === 'item';
+            document.getElementById('tableTitle').innerText = isItemMode ? `${key} 全球排位` : `${currentData.compareData.byRegion[key].name} 内购大全`;
+
+            const list = isItemMode ? currentData.compareData.byItem[key] : currentData.compareData.byRegion[key].iaps;
+            if(!list || list.length === 0) return;
+
+            // 右侧冠军卡片处理 (只在项目模式下有意义，地区模式下展示第一个项目)
+            const best = isItemMode ? list[0] : list.sort((a,b)=>a.cnyPrice-b.cnyPrice)[0]; 
+            const highest = isItemMode ? list[list.length - 1] : null;
+            const bInfo = REGION_MAP[(best.regionCode || key).toLowerCase()] || {f:'🌍', n:best.regionName};
+            
+            document.getElementById('bestCny').innerText = `¥${best.cnyPrice.toFixed(2)}`;
+            document.getElementById('bestBadge').innerHTML = `${bInfo.f} ${isItemMode ? bInfo.n : best.name}`;
+            
+            if(isItemMode && highest && highest.cnyPrice > 0) {
+                const savePercent = Math.round(((highest.cnyPrice - best.cnyPrice) / highest.cnyPrice) * 100);
+                document.getElementById('bestSaving').innerText = `比最高价省 ${savePercent}%`;
+            } else {
+                document.getElementById('bestSaving').innerText = '';
+            }
+
+            // 渲染左侧表格
+            let tableHtml = '';
+            list.forEach((item, idx) => {
+                const info = isItemMode ? (REGION_MAP[item.regionCode.toLowerCase()] || {f:'🌍',n:item.regionName}) : {f:'',n:item.name};
+                tableHtml += `
+                <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+                    <td class="py-4 px-6 text-gray-300 font-medium">${idx+1}</td>
+                    <td class="py-4 px-2 flex items-center gap-2 text-[14px]">
+                        ${isItemMode ? `<span class="text-xl">${info.f}</span>` : ''}
+                        <span class="font-medium text-gray-800">${info.n}</span>
+                    </td>
+                    <td class="py-4 px-2 text-right text-gray-400 text-[12px] font-mono">${item.originalPrice}</td>
+                    <td class="py-4 px-6 text-right font-bold text-gray-900">¥${item.cnyPrice.toFixed(2)}</td>
+                </tr>`;
+            });
+            document.getElementById('priceTable').innerHTML = tableHtml;
         }
     </script>
 </body>
