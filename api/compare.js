@@ -11,11 +11,11 @@ module.exports = async function(req, res) {
   const queryApp = req.query.app;
   if (!queryApp) return res.status(400).json({ error: '请提供应用名称或ID' });
 
-  const targetApp = SUPPORTED_APPS.find(
+  const foundApp = SUPPORTED_APPS.find(
     a => a.id === queryApp || a.name.toLowerCase() === queryApp.toLowerCase()
   );
 
-  if (!targetApp) {
+  if (!foundApp) {
     return res.status(403).json({ 
       error: '应用未收录', 
       isVipPrompt: true,
@@ -23,7 +23,10 @@ module.exports = async function(req, res) {
     });
   }
 
-  const cacheKey = `compare:v3:${targetApp.id}`;
+  // 深拷贝，防止污染全局配置
+  const targetApp = { ...foundApp };
+
+  const cacheKey = `compare:v4:${targetApp.id}`;
 
   const cachedData = await getCache(cacheKey);
   if (cachedData) return res.status(200).json({ status: 'success', source: 'cache', data: cachedData });
@@ -32,7 +35,20 @@ module.exports = async function(req, res) {
   if (!gotLock) return res.status(429).json({ status: 'processing', message: '正在全网火速拉取数据，请5秒后刷新...' });
 
   try {
-    // 🌟 1. 借鉴开源库：动态拉取全球实时汇率并缓存 12 小时
+    // 🌟 核心修复：在安全的服务器端，直接调苹果接口拿 512x512 高清大图和本体价格
+    try {
+      const itunesRes = await fetch(`https://itunes.apple.com/lookup?id=${targetApp.id}&country=cn`);
+      const itunesData = await itunesRes.json();
+      if (itunesData.results && itunesData.results.length > 0) {
+        const result = itunesData.results[0];
+        // 提取 512 高清图
+        targetApp.icon = result.artworkUrl512 || result.artworkUrl100.replace('100x100bb', '512x512bb');
+        targetApp.priceStr = result.formattedPrice || (result.price === 0 ? '免费' : `¥${result.price}`);
+      }
+    } catch(e) {
+      console.warn('获取高清图失败，使用空图兜底');
+    }
+
     let liveRates = await getCache('exchange_rates_cny');
     if (!liveRates) {
       try {
@@ -41,11 +57,10 @@ module.exports = async function(req, res) {
         liveRates = rateData.rates;
         await setCache('exchange_rates_cny', liveRates, 43200);
       } catch(e) {
-        liveRates = FALLBACK_RATES; // 接口挂了用兜底
+        liveRates = FALLBACK_RATES;
       }
     }
 
-    // 2. 传入实时汇率进行抓取
     const rawRegionData = await fetchAllRegions(targetApp.id, liveRates);
 
     const byItem = {};
@@ -55,10 +70,8 @@ module.exports = async function(req, res) {
       const iapList = rawRegionData[regionCode];
       const regionObj = REGIONS.find(r => r.code === regionCode);
       
-      // 先按价格升序排序
       iapList.sort((a, b) => a.cnyPrice - b.cnyPrice);
 
-      // 🌟 2. 借鉴开源库：完美处理同名内购防覆盖 (如出现两个 1 Month, 第二个叫 1 Month #2)
       const nameCountMap = {};
       const processedIaps = iapList.map(iap => {
           const count = (nameCountMap[iap.name] || 0) + 1;
