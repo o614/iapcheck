@@ -42,16 +42,26 @@ module.exports = async function(req, res) {
     // 5. 🚀 触发 10 国并发爬取
     const rawRegionData = await fetchAllRegions(appId);
 
-    // 6. 数据聚合 (Data Pivot)：将纵向的"国家->内购"，转换成横向的"内购->各区排行"
-    const byItem = {};
+    // ... 之前的代码到步骤 5 结束 ...
+
+    // 6. 数据聚合 (Data Pivot)
+    const byItem = {};   // 横向：内购名 -> 各国价格
+    const byRegion = {}; // 纵向：国家 -> 所有内购
+
     Object.keys(rawRegionData).forEach(regionCode => {
       const iapList = rawRegionData[regionCode];
+      const regionObj = REGIONS.find(r => r.code === regionCode);
+      
+      // 填充纵向数据
+      byRegion[regionCode] = {
+        name: regionObj.name,
+        flag: regionObj.flag,
+        iaps: iapList // 该国家下的所有内购
+      };
+
+      // 填充横向数据
       iapList.forEach(iap => {
         if (!byItem[iap.name]) byItem[iap.name] = [];
-        
-        // 查找国家详细信息
-        const regionObj = REGIONS.find(r => r.code === regionCode);
-        
         byItem[iap.name].push({
           regionCode: regionCode,
           regionName: regionObj.name,
@@ -61,23 +71,25 @@ module.exports = async function(req, res) {
       });
     });
 
-    // 7. 对每个内购项按人民币价格从低到高排序
+    // 7. 排序
     Object.keys(byItem).forEach(itemName => {
       byItem[itemName].sort((a, b) => a.cnyPrice - b.cnyPrice);
     });
 
-    // 8. 组装最终 JSON
+    // 8. 组装结果
     const finalResult = {
       app: {
         id: appId,
         name: appInfo.trackName,
         icon: appInfo.artworkUrl100,
-        developer: appInfo.artistName,
-        isFree: appInfo.price === 0,
-        buyoutPrice: appInfo.price || 0 // 如果要买断的价格
+        developer: appInfo.artistName
       },
-      compareData: byItem
+      compareData: {
+        byItem,   // 用于“项目比价”
+        byRegion  // 用于“地区对比”
+      }
     };
+// ... 后续写入缓存并返回 ...
 
     // 9. 写入缓存 (缓存 24 小时)
     await setCache(cacheKey, finalResult, 86400);
