@@ -74,7 +74,7 @@
             <div class="flex justify-between items-end mb-8">
                 <h1 class="text-[34px] font-bold tracking-tight leading-none">Today</h1>
                 <div id="avatarBtn" onclick="toggleAccountModal(true, this)" class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-80 shadow-sm border border-black/5">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="w-full h-full object-cover">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                 </div>
             </div>
 
@@ -83,13 +83,13 @@
 
         <div id="detailView" class="hidden animate-fade-in">
             
-            <button onclick="goHome()" class="flex items-center gap-1 text-[#0071e3] font-semibold text-[17px] mb-6 hover:opacity-80 transition cursor-pointer">
+            <button onclick="goHome()" class="flex items-center gap-1 text-[#0071e3] font-semibold text-[17px] mb-4 -mt-4 hover:opacity-80 transition cursor-pointer">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
                 返回
             </button>
 
             <div class="bg-white rounded-[24px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-black/5 mb-8 flex items-center gap-4 transition-all">
-                <img id="detailIcon" src="" class="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[16px] md:rounded-[18px] border border-black/5 flex-shrink-0 object-cover shadow-sm bg-gray-100">
+                <img id="detailIcon" src="" referrerpolicy="no-referrer" class="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[16px] md:rounded-[18px] border border-black/5 flex-shrink-0 object-cover shadow-sm bg-gray-100">
                 <div class="flex-grow overflow-hidden">
                     <h1 id="detailName" class="text-[18px] md:text-[20px] font-bold text-[#1d1d1f] tracking-tight truncate leading-tight">加载中...</h1>
                     <div class="flex items-center gap-2 mt-1">
@@ -164,7 +164,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
                 <div class="w-[72px] h-[72px] bg-gray-100 border border-black/5 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full object-cover">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" referrerpolicy="no-referrer" class="w-full h-full object-cover">
                 </div>
                 <h3 class="text-[22px] font-bold tracking-tight text-[#1d1d1f] mb-1">我的账户</h3>
                 <p class="text-[13px] text-gray-500 mb-8">免费游客模式</p>
@@ -202,14 +202,6 @@
     </main>
 
     <script>
-        // 🌟 核心代理函数：绕过苹果所有防盗链机制，秒出图片！
-        function pxImg(url) {
-            if (!url) return '';
-            if (url.includes('dicebear')) return url;
-            return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=256&q=80`;
-        }
-
-        // 🌟 中文化系统日期
         const d = new Date();
         const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
         document.getElementById('todayDate').innerText = `${d.getMonth() + 1}月${d.getDate()}日 ${days[d.getDay()]}`;
@@ -251,15 +243,14 @@
                         const names = card.querySelectorAll('.app-name-ph');
                         names[0].innerText = info.trackName;
                         names[1].innerText = info.trackName;
-                        // 应用图片代理
-                        card.querySelector('.app-icon-ph').outerHTML = `<img src="${pxImg(info.artworkUrl100)}" class="w-[50px] h-[50px] rounded-[12px] shadow-sm flex-shrink-0">`;
+                        // 🌟 直连苹果 CDN
+                        card.querySelector('.app-icon-ph').outerHTML = `<img src="${info.artworkUrl100}" referrerpolicy="no-referrer" class="w-[50px] h-[50px] rounded-[12px] shadow-sm flex-shrink-0">`;
                         card.querySelector('.app-desc-ph').innerText = info.primaryGenreName;
                     }
                 });
             } catch(e) {}
         };
 
-        // 🌟 物理级弹簧动画：精准记录出发点
         let lastOriginRect = null;
 
         function toggleAccountModal(show, el) {
@@ -268,7 +259,6 @@
             const card = document.getElementById('accountCard');
             
             if (show) {
-                // 如果传入了点击的元素，记录它的坐标，否则默认屏幕中央
                 if (el) {
                     lastOriginRect = el.getBoundingClientRect();
                 } else {
@@ -277,32 +267,27 @@
                 
                 modal.classList.remove('hidden');
                 
-                // 归位以测量卡片真实的中心点
                 card.style.transform = 'none';
                 const cRect = card.getBoundingClientRect();
                 
-                // 计算从出发点到卡片中心的距离
                 const startX = lastOriginRect.left + lastOriginRect.width/2 - (cRect.left + cRect.width/2);
                 const startY = lastOriginRect.top + lastOriginRect.height/2 - (cRect.top + cRect.height/2);
                 
-                // 瞬间把卡片缩小并移到点击位置
                 card.style.transition = 'none';
                 card.style.transform = `translate(${startX}px, ${startY}px) scale(0.05)`;
                 card.style.opacity = '0';
                 card.style.borderRadius = '50px';
                 
-                void card.offsetWidth; // 触发重绘
+                void card.offsetWidth; 
                 
-                // 弹簧动画飞回中心
                 card.style.transition = 'transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.4s ease, border-radius 0.4s ease';
                 card.style.transform = 'translate(0, 0) scale(1)';
                 card.style.opacity = '1';
-                card.style.borderRadius = '28px'; // 全平台居中大圆角
+                card.style.borderRadius = '28px';
                 
                 overlay.style.transition = 'opacity 0.4s ease';
                 overlay.style.opacity = '1';
             } else {
-                // 关闭时原路飞回
                 const cRect = card.getBoundingClientRect();
                 const endX = lastOriginRect.left + lastOriginRect.width/2 - (cRect.left + cRect.width/2);
                 const endY = lastOriginRect.top + lastOriginRect.height/2 - (cRect.top + cRect.height/2);
@@ -345,7 +330,7 @@
                             const safeName = app.trackName.replace(/'/g, "\\'");
                             html += `
                             <div onclick="selectSuggestion('${app.trackId}', '${safeName}')" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition border-b border-gray-100 last:border-0">
-                                <img src="${pxImg(app.artworkUrl60)}" class="w-10 h-10 rounded-xl border border-black/5 shadow-sm">
+                                <img src="${app.artworkUrl60}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-xl border border-black/5 shadow-sm">
                                 <div class="flex-grow overflow-hidden">
                                     <h4 class="text-[14px] font-semibold text-[#1d1d1f] truncate">${app.trackName}</h4>
                                     <p class="text-[12px] text-gray-500 truncate">${app.artistName}</p>
@@ -418,8 +403,8 @@
                 document.getElementById('detailView').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                // 代理显示大图标
-                document.getElementById('detailIcon').src = pxImg(currentData.app.icon);
+                // 🌟 直连苹果 CDN
+                document.getElementById('detailIcon').src = currentData.app.icon;
                 document.getElementById('detailName').innerText = currentData.app.name;
                 document.getElementById('detailDev').innerText = currentData.app.developer;
                 
