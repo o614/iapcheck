@@ -3,138 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>AppPrice - 现代全球比价</title>
+    <title>AppPrice - App Store 全球比价</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #e6eeff 0%, #f4e8ff 50%, #f0f7ff 100%); background-attachment: fixed; -webkit-tap-highlight-color: transparent; }
+        /* 强制使用 Apple 系统字体 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f7; /* Apple 经典浅灰背景 */
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* 隐藏滚动条 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #10b981; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
+        
+        /* 苹果风毛玻璃导航栏 */
+        .apple-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* Today 卡片悬浮阴影 */
+        .today-card {
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.15);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+        }
+        .today-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+        }
+
+        /* 加载动画 */
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #0071e3; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 苹果蓝色链接与按钮 */
+        .text-apple-blue { color: #0071e3; }
+        .bg-apple-blue { background-color: #0071e3; }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+<body class="text-[#1d1d1f] antialiased min-h-screen flex flex-col">
 
-    <header class="w-full max-w-[1200px] mx-auto px-4 pt-6 pb-2 flex justify-between items-center relative z-20">
-        <div class="flex items-center gap-2 font-bold text-xl tracking-tight cursor-pointer" onclick="location.reload()">
-            <div class="w-8 h-8 bg-black text-white rounded-xl flex items-center justify-center text-sm">P</div>
-            AppPrice
-        </div>
-        
-        <div class="hidden md:flex bg-white/60 backdrop-blur-md border border-white rounded-full p-1 shadow-sm items-center px-4">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="text" id="searchInput" placeholder="搜索应用名称或ID..." class="w-48 bg-transparent border-none pl-2 py-1.5 text-sm outline-none focus:w-64 transition-all" onkeypress="if(event.key === 'Enter') doSearch(this.value)">
-        </div>
+    <header class="apple-nav fixed top-0 w-full z-50">
+        <div class="max-w-[1000px] mx-auto px-4 h-14 flex justify-between items-center">
+            <div class="flex items-center gap-2 font-semibold text-[17px] tracking-tight cursor-pointer hover:opacity-70 transition" onclick="location.reload()">
+                <svg class="w-5 h-5 text-black" viewBox="0 0 170 170"><path fill="currentColor" d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.92.21-9.84-1.96-14.75-6.53-3.13-2.73-7.1-7.43-11.9-14.1-5.97-8.24-10.71-17.93-14.21-29.08-3.69-11.53-5.54-22.39-5.54-32.58 0-14.61 4.05-26.35 12.16-35.25 5.6-6.14 12.44-9.36 20.53-9.66 4.69-.2 9.9 1.48 15.65 5.04 5.75 3.56 9.61 5.34 11.57 5.34 1.7 0 5.86-1.93 12.48-5.78 6.62-3.85 12.38-5.57 17.26-5.15 10.95.84 19.5 4.8 25.66 11.88-9.86 5.86-14.68 13.92-14.46 24.16.23 9.4 3.65 17.13 10.28 23.21 4.75 4.3 10.39 7.02 16.92 8.16-2.58 7.37-5.69 14.34-9.33 20.89zm-38.62-113.6c-4.47 4.54-10.05 7.15-16.74 7.82-.56-6.57 1.83-12.63 7.17-18.17 4.31-4.45 9.81-7.11 16.48-7.97.66 6.84-1.84 12.95-6.91 18.32z"/></svg>
+                AppPrice
+            </div>
+            
+            <div class="flex flex-grow max-w-[360px] mx-6 relative">
+                <input type="text" id="searchInput" placeholder="搜索 App 名称或 ID" class="w-full bg-black/5 border-none rounded-lg py-1.5 pl-9 pr-4 text-[14px] outline-none focus:ring-2 focus:ring-[#0071e3]/40 transition" onkeypress="if(event.key === 'Enter') doSearch(this.value)">
+                <svg class="w-4 h-4 absolute left-3 top-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
 
-        <div class="flex items-center gap-4">
-            <button class="bg-[#0071e3] text-white text-xs font-bold px-4 py-1.5 rounded-full shadow hover:bg-blue-600 transition">升级 VIP</button>
+            <div class="text-[12px] font-medium text-gray-500 hidden md:block">
+                基准货币: <span class="text-[#1d1d1f]">CNY ¥</span>
+            </div>
         </div>
     </header>
 
-    <main class="w-full max-w-[1200px] mx-auto px-4 pb-12 flex-grow relative z-10">
+    <main class="w-full max-w-[1000px] mx-auto px-4 pt-24 pb-20 flex-grow relative z-10">
         
-        <div class="glass-card rounded-[28px] p-6 md:p-8 mt-4 mb-8 relative overflow-hidden" id="heroArea">
-            <div id="defaultMarket">
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">🔥 本周收录 Core Apps</h1>
-                <p class="text-sm text-gray-500 mb-6">点击下方热门应用，一键透视全球 10 国汇率底价。</p>
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="appGrid"></div>
-            </div>
-
-            <div id="appDetail" class="hidden flex flex-col md:flex-row gap-6 items-start">
-                <div id="appIconBox" class="w-24 h-24 rounded-[22px] bg-white shadow-sm border border-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden"></div>
-                <div class="flex-grow">
-                    <h1 id="appNameTitle" class="text-3xl font-bold text-gray-900 tracking-tight">App Name</h1>
-                    <p class="text-sm text-gray-500 mt-2 flex items-center gap-2">
-                        <span id="appDevTitle">Developer Info</span>
-                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                        <span class="font-semibold text-blue-500">已收录全区数据</span>
-                    </p>
-                    <button onclick="location.reload()" class="mt-4 text-[12px] bg-gray-100 px-3 py-1 rounded-md text-gray-600 hover:bg-gray-200">← 返回大厅</button>
-                </div>
-            </div>
+        <div id="globalLoader" class="hidden absolute inset-0 z-50 bg-[#f5f5f7]/80 backdrop-blur-sm flex flex-col items-center pt-32">
+            <div class="loader mb-4"></div>
+            <p class="text-[14px] font-medium text-gray-500">正在连接全球 App Store...</p>
         </div>
 
-        <div id="compareArea" class="hidden">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-4 gap-4">
-                <div class="flex gap-6 px-2">
-                    <button onclick="switchMode('item')" id="tabItem" class="pb-3 border-b-2 border-black font-bold text-[16px] text-black">套餐对比</button>
-                    <button onclick="switchMode('region')" id="tabRegion" class="pb-3 border-b-2 border-transparent text-gray-400 font-medium text-[16px] hover:text-gray-600 transition">地区对比</button>
+        <div id="homeView" class="animate-fade-in">
+            <h4 class="text-gray-500 font-semibold text-[13px] uppercase tracking-widest mb-1" id="todayDate">SATURDAY, OCTOBER 24</h4>
+            <div class="flex justify-between items-end mb-8">
+                <h1 class="text-[34px] font-bold tracking-tight leading-none">Today</h1>
+                <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-80"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="appGrid">
+                </div>
+        </div>
+
+        <div id="detailView" class="hidden animate-fade-in">
+            
+            <div class="flex flex-col md:flex-row gap-6 items-start border-b border-gray-200 pb-8 mb-6">
+                <div id="appIconBox" class="w-[118px] h-[118px] rounded-[26px] bg-white border border-black/5 flex-shrink-0 overflow-hidden shadow-sm"></div>
+                <div class="flex-grow pt-1">
+                    <h1 id="appNameTitle" class="text-[28px] font-bold tracking-tight text-[#1d1d1f] leading-tight">App Name</h1>
+                    <p id="appDevTitle" class="text-[15px] text-gray-500 mt-1 mb-4">Developer</p>
+                    
+                    <div class="flex items-center gap-4">
+                        <button class="bg-apple-blue text-white font-bold text-[15px] px-6 py-1.5 rounded-full hover:bg-blue-600 transition">获取</button>
+                        <button onclick="location.reload()" class="bg-gray-200/80 text-apple-blue w-8 h-8 rounded-full flex items-center justify-center font-bold hover:bg-gray-300 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div id="iapListContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-6 items-center"></div>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-[20px] font-bold tracking-tight">App 内购买项目比价</h2>
+                <div class="bg-gray-200/80 p-0.5 rounded-[9px] flex text-[13px] font-medium w-48">
+                    <button onclick="switchMode('item')" id="tabItem" class="flex-1 py-1 rounded-[7px] bg-white shadow-sm text-black">按项目</button>
+                    <button onclick="switchMode('region')" id="tabRegion" class="flex-1 py-1 rounded-[7px] text-gray-500">按地区</button>
+                </div>
+            </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
-                <div class="lg:col-span-8 glass-card rounded-[28px] bg-white overflow-hidden flex flex-col">
-                    <div class="px-6 py-5 border-b border-gray-100 flex items-center gap-2">
-                        <h2 id="tableTitle" class="font-bold text-[16px] text-gray-800">全球价格排位</h2>
-                    </div>
-                    <div class="flex-grow overflow-x-auto">
-                        <table class="w-full min-w-[500px]">
+            <div id="iapListContainer" class="flex gap-2 overflow-x-auto no-scrollbar pb-6 items-center"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <div class="lg:col-span-7">
+                    <h3 id="tableTitle" class="text-[17px] font-semibold mb-3">价格排行</h3>
+                    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                        <table class="w-full text-[14px]">
                             <thead>
-                                <tr class="text-[12px] font-semibold text-gray-400 border-b border-gray-100">
-                                    <th class="py-4 px-6 text-left w-16">排名</th>
-                                    <th class="py-4 px-2 text-left">地区</th>
-                                    <th class="py-4 px-2 text-right">原价</th>
-                                    <th class="py-4 px-6 text-right">CNY</th>
+                                <tr class="border-b border-gray-100 text-gray-500">
+                                    <th class="py-3 px-4 text-left font-medium w-12">#</th>
+                                    <th class="py-3 px-2 text-left font-medium">地区</th>
+                                    <th class="py-3 px-4 text-right font-medium">折合 CNY</th>
                                 </tr>
                             </thead>
-                            <tbody id="priceTable" class="text-[14px]"></tbody>
+                            <tbody id="priceTable">
+                                </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="lg:col-span-4 space-y-6">
-                    <div class="bg-gradient-to-b from-[#f2fdf5] to-white border border-[#dcfce7] rounded-[28px] p-8 relative overflow-hidden shadow-sm">
-                        <div class="absolute top-4 right-4 bg-[#dcfce7] text-[#059669] text-[10px] font-bold px-2.5 py-1 rounded-md">最优选择</div>
-                        <div class="text-center mt-2">
-                            <p class="text-[13px] font-medium text-gray-500 mb-1">最低折合人民币</p>
-                            <h3 id="bestCny" class="text-[46px] font-black tracking-tight text-gray-900 leading-none mb-3">¥0.00</h3>
-                            <div class="flex justify-center mb-4"><div id="bestBadge" class="bg-[#10b981] text-white text-[12px] font-bold px-3 py-1 rounded-full shadow-sm">🌍 等待</div></div>
-                            <p id="bestSaving" class="text-[13px] font-semibold text-[#059669]"></p>
+                <div class="lg:col-span-5 space-y-4">
+                    <h3 class="text-[17px] font-semibold mb-3">全球最低价</h3>
+                    <div class="bg-[#1d1d1f] rounded-2xl p-6 text-white shadow-lg">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span id="bestFlag" class="text-2xl">🌍</span>
+                            <span id="bestName" class="font-semibold text-gray-300">地区名称</span>
+                        </div>
+                        <div class="mt-4 flex items-end justify-between">
+                            <div>
+                                <p class="text-sm text-gray-400 mb-1" id="bestOriginal">原价: -</p>
+                                <div id="bestCny" class="text-[40px] font-bold tracking-tight leading-none">¥0.00</div>
+                            </div>
+                            <div id="bestBadge" class="bg-apple-blue text-[12px] font-bold px-2 py-1 rounded mb-1">
+                                最优选
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 border border-gray-200 flex items-start gap-4 cursor-pointer hover:bg-gray-50 transition">
+                        <div class="w-10 h-10 bg-blue-50 text-apple-blue rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-[14px] font-bold text-[#1d1d1f]">没有低价区 Apple ID？</h4>
+                            <p class="text-[12px] text-gray-500 mt-1">获取原生独享外区账号，畅享全球超低折扣订阅服务。</p>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
-        <div id="vipPrompt" class="hidden absolute inset-0 z-50 bg-white/60 backdrop-blur-md rounded-[28px] flex flex-col items-center justify-center p-6 text-center">
-            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 mb-4">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <div id="vipPrompt" class="hidden fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
+            <div class="bg-white w-full max-w-sm rounded-2xl p-6 text-center shadow-2xl scale-100 transition-transform">
+                <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-apple-blue">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h3 class="text-[19px] font-bold mb-2">应用未收录</h3>
+                <p id="vipMsg" class="text-[14px] text-gray-500 mb-6 leading-relaxed">该应用暂不支持免费查询。</p>
+                <button onclick="location.reload()" class="w-full bg-apple-blue text-white font-bold py-3 rounded-xl mb-3 hover:bg-blue-600 transition">升级 VIP 解锁全网检索</button>
+                <button onclick="document.getElementById('vipPrompt').classList.add('hidden')" class="w-full text-apple-blue text-[14px] font-semibold py-2">取消</button>
             </div>
-            <h2 class="text-2xl font-bold mb-2">该应用暂未收录</h2>
-            <p id="vipMsg" class="text-gray-500 max-w-md mb-6">普通用户仅支持查询推荐库内的应用。</p>
-            <button onclick="location.reload()" class="bg-[#0071e3] text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-600 transition">了解 VIP 权限并解锁</button>
-            <button onclick="document.getElementById('vipPrompt').classList.add('hidden')" class="mt-4 text-sm text-gray-400 underline">先看看免费区</button>
         </div>
 
-        <div id="globalLoader" class="hidden absolute inset-0 z-50 bg-white/40 backdrop-blur-sm flex items-center justify-center rounded-[28px]">
-            <div class="loader"></div>
-        </div>
     </main>
 
+    <footer class="border-t border-gray-200 py-6 text-center text-[12px] text-gray-400">
+        Copyright © 2026 App Store Insights. All rights reserved.
+    </footer>
+
     <script>
-        // 内置的 10 个热门数据（为了让首页一打开就有东西）
+        // 动态设置 Today 的日期
+        const dateOptions = { weekday: 'long', month: 'long', day: 'numeric' };
+        document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-US', dateOptions).toUpperCase();
+
+        // 首页 Today 精选卡片数据 (视觉呈现)
         const HOT_APPS = [
-            { id:'6448311069', name:'ChatGPT', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/95/9b/a6/959ba6d5-4523-bd77-0d92-ec7f3ca69db0/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/100x100bb.jpg' },
-            { id:'324684580', name:'Spotify', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/21/ee/ff/21eeffb0-bd5b-5942-5fba-03619ea019a8/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.jpg' },
-            { id:'686449807', name:'Telegram', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a4/09/b3/a409b30c-2559-994c-8bb2-f8cce06c9a93/AppIcon-1x_U007emarketing-0-7-0-85-220.png/100x100bb.jpg' },
-            { id:'364709193', name:'Netflix', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/80/7e/ab/807eab79-11ba-b2cb-4235-ef6daeeb8e86/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.jpg' },
-            { id:'897362505', name:'Canva', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/cd/66/ec/cd66ecc9-e6ce-4680-e837-a169b1227091/AppIcon-1x_U007emarketing-0-7-0-85-220.png/100x100bb.jpg' }
+            { id:'6448311069', name:'ChatGPT', desc:'The official app by OpenAI.', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/95/9b/a6/959ba6d5-4523-bd77-0d92-ec7f3ca69db0/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/100x100bb.jpg', bg: 'from-green-400 to-emerald-600' },
+            { id:'324684580', name:'Spotify', desc:'Music and podcasts.', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/21/ee/ff/21eeffb0-bd5b-5942-5fba-03619ea019a8/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.jpg', bg: 'from-gray-800 to-black' },
+            { id:'364709193', name:'Netflix', desc:'Watch TV shows and movies.', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/80/7e/ab/807eab79-11ba-b2cb-4235-ef6daeeb8e86/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.jpg', bg: 'from-red-500 to-red-800' },
+            { id:'686449807', name:'Telegram', desc:'Fast and secure messaging.', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a4/09/b3/a409b30c-2559-994c-8bb2-f8cce06c9a93/AppIcon-1x_U007emarketing-0-7-0-85-220.png/100x100bb.jpg', bg: 'from-blue-400 to-blue-600' }
         ];
 
         let currentData = null;
-        let viewMode = 'item'; // item = 按项目, region = 按国家
+        let viewMode = 'item'; 
         const REGION_MAP = { 'us':{f:'🇺🇸',n:'美国'}, 'cn':{f:'🇨🇳',n:'中国'}, 'jp':{f:'🇯🇵',n:'日本'}, 'tr':{f:'🇹🇷',n:'土耳其'}, 'ng':{f:'🇳🇬',n:'尼日利亚'}, 'eg':{f:'🇪🇬',n:'埃及'}, 'pk':{f:'🇵🇰',n:'巴基斯坦'}, 'in':{f:'🇮🇳',n:'印度'}, 'br':{f:'🇧🇷',n:'巴西'}, 'ar':{f:'🇦🇷',n:'阿根廷'} };
 
+        // 渲染首页大卡片
         window.onload = () => {
             const grid = document.getElementById('appGrid');
             HOT_APPS.forEach(app => {
                 grid.innerHTML += `
-                    <div onclick="doSearch('${app.id}')" class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition hover:-translate-y-1">
-                        <img src="${app.icon}" class="w-12 h-12 rounded-[10px] mb-2">
-                        <span class="text-[13px] font-bold text-gray-800">${app.name}</span>
+                    <div onclick="doSearch('${app.id}')" class="today-card relative h-[280px] rounded-3xl overflow-hidden cursor-pointer bg-gradient-to-br ${app.bg} text-white p-6 flex flex-col justify-between">
+                        <div>
+                            <p class="text-[13px] font-semibold opacity-80 uppercase tracking-wide mb-1">FEATURED</p>
+                            <h2 class="text-3xl font-bold leading-tight">${app.name}</h2>
+                        </div>
+                        <div class="flex items-center gap-4 bg-black/20 backdrop-blur-md p-3 rounded-2xl border border-white/10">
+                            <img src="${app.icon}" class="w-12 h-12 rounded-[10px]">
+                            <div class="flex-grow">
+                                <p class="text-[14px] font-bold">${app.name}</p>
+                                <p class="text-[11px] opacity-80 line-clamp-1">${app.desc}</p>
+                            </div>
+                            <button class="bg-white/20 text-white font-bold text-[13px] px-4 py-1.5 rounded-full">查看</button>
+                        </div>
                     </div>`;
             });
         };
@@ -158,39 +234,42 @@
 
                 currentData = json.data;
                 
-                // 切换到详情视图
-                document.getElementById('defaultMarket').classList.add('hidden');
-                document.getElementById('appDetail').classList.remove('hidden');
-                document.getElementById('compareArea').classList.remove('hidden');
+                // 视图切换
+                document.getElementById('homeView').classList.add('hidden');
+                document.getElementById('detailView').classList.remove('hidden');
 
+                // 填充详情头
                 document.getElementById('appIconBox').innerHTML = `<img src="${currentData.app.icon}" class="w-full h-full object-cover">`;
                 document.getElementById('appNameTitle').innerText = currentData.app.name;
                 document.getElementById('appDevTitle').innerText = currentData.app.developer;
 
-                switchMode('item'); // 默认按项目比价
+                switchMode('item');
             } catch (e) {
                 document.getElementById('globalLoader').classList.add('hidden');
-                alert('网络异常');
+                alert('网络异常，请重试');
             }
         }
 
         function switchMode(mode) {
             viewMode = mode;
-            document.getElementById('tabItem').className = mode === 'item' ? 'pb-3 border-b-2 border-black font-bold text-[16px] text-black' : 'pb-3 border-b-2 border-transparent text-gray-400 font-medium text-[16px] hover:text-gray-600';
-            document.getElementById('tabRegion').className = mode === 'region' ? 'pb-3 border-b-2 border-black font-bold text-[16px] text-black' : 'pb-3 border-b-2 border-transparent text-gray-400 font-medium text-[16px] hover:text-gray-600';
+            // Apple 样式的 Segmented Control 切换
+            document.getElementById('tabItem').className = mode === 'item' ? 'flex-1 py-1 rounded-[7px] bg-white shadow-sm text-black font-semibold' : 'flex-1 py-1 rounded-[7px] text-gray-500 hover:text-black transition';
+            document.getElementById('tabRegion').className = mode === 'region' ? 'flex-1 py-1 rounded-[7px] bg-white shadow-sm text-black font-semibold' : 'flex-1 py-1 rounded-[7px] text-gray-500 hover:text-black transition';
             
             const dataSource = mode === 'item' ? currentData.compareData.byItem : currentData.compareData.byRegion;
             const keys = Object.keys(dataSource);
             
             if (keys.length === 0) {
-                document.getElementById('iapListContainer').innerHTML = '<span class="text-sm text-gray-500 pl-2">无内购数据</span>';
+                document.getElementById('iapListContainer').innerHTML = '<span class="text-[14px] text-gray-500 pl-2">该应用可能暂无内购数据。</span>';
+                document.getElementById('priceTable').innerHTML = '';
                 return;
             }
 
             let pillsHtml = '';
             keys.forEach((key, i) => {
                 const displayName = mode === 'item' ? key : (REGION_MAP[key]?.f + ' ' + dataSource[key].name);
-                pillsHtml += `<button onclick="renderTable('${key}', this)" class="iap-pill flex-shrink-0 px-5 py-2.5 rounded-full border text-[13px] transition-all cursor-pointer ${i===0?'bg-white shadow border-transparent text-black font-bold':'bg-transparent text-gray-500 hover:bg-white/50 border-transparent'}">${displayName}</button>`;
+                const activeClass = i === 0 ? 'bg-gray-800 text-white border-transparent font-semibold' : 'bg-transparent text-[#1d1d1f] border-gray-300 hover:bg-gray-100';
+                pillsHtml += `<button onclick="renderTable('${key}', this)" class="iap-pill flex-shrink-0 px-4 py-1.5 rounded-full border text-[13px] transition-all cursor-pointer ${activeClass}">${displayName}</button>`;
             });
             document.getElementById('iapListContainer').innerHTML = pillsHtml;
             renderTable(keys[0], document.querySelector('.iap-pill'));
@@ -198,44 +277,42 @@
 
         function renderTable(key, el) {
             if (el) {
-                document.querySelectorAll('.iap-pill').forEach(i => i.className = 'iap-pill flex-shrink-0 px-5 py-2.5 rounded-full border text-[13px] transition-all cursor-pointer bg-transparent text-gray-500 hover:bg-white/50 border-transparent');
-                el.className = 'iap-pill flex-shrink-0 px-5 py-2.5 rounded-full border text-[13px] transition-all cursor-pointer bg-white shadow border-transparent text-black font-bold';
+                document.querySelectorAll('.iap-pill').forEach(i => i.className = 'iap-pill flex-shrink-0 px-4 py-1.5 rounded-full border text-[13px] transition-all cursor-pointer bg-transparent text-[#1d1d1f] border-gray-300 hover:bg-gray-100');
+                el.className = 'iap-pill flex-shrink-0 px-4 py-1.5 rounded-full border text-[13px] transition-all cursor-pointer bg-gray-800 text-white border-transparent font-semibold';
             }
 
             const isItemMode = viewMode === 'item';
-            document.getElementById('tableTitle').innerText = isItemMode ? `${key} 全球排位` : `${currentData.compareData.byRegion[key].name} 内购大全`;
-
             const list = isItemMode ? currentData.compareData.byItem[key] : currentData.compareData.byRegion[key].iaps;
             if(!list || list.length === 0) return;
 
-            // 右侧冠军卡片处理 (只在项目模式下有意义，地区模式下展示第一个项目)
+            // 右侧最优卡片 (黑底白字高逼格)
             const best = isItemMode ? list[0] : list.sort((a,b)=>a.cnyPrice-b.cnyPrice)[0]; 
-            const highest = isItemMode ? list[list.length - 1] : null;
             const bInfo = REGION_MAP[(best.regionCode || key).toLowerCase()] || {f:'🌍', n:best.regionName};
             
             document.getElementById('bestCny').innerText = `¥${best.cnyPrice.toFixed(2)}`;
-            document.getElementById('bestBadge').innerHTML = `${bInfo.f} ${isItemMode ? bInfo.n : best.name}`;
-            
-            if(isItemMode && highest && highest.cnyPrice > 0) {
-                const savePercent = Math.round(((highest.cnyPrice - best.cnyPrice) / highest.cnyPrice) * 100);
-                document.getElementById('bestSaving').innerText = `比最高价省 ${savePercent}%`;
-            } else {
-                document.getElementById('bestSaving').innerText = '';
-            }
+            document.getElementById('bestFlag').innerText = bInfo.f;
+            document.getElementById('bestName').innerText = isItemMode ? bInfo.n : best.name;
+            document.getElementById('bestOriginal').innerText = `当地原价: ${best.originalPrice}`;
 
-            // 渲染左侧表格
+            // 左侧排版榜
             let tableHtml = '';
             list.forEach((item, idx) => {
                 const info = isItemMode ? (REGION_MAP[item.regionCode.toLowerCase()] || {f:'🌍',n:item.regionName}) : {f:'',n:item.name};
                 tableHtml += `
-                <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
-                    <td class="py-4 px-6 text-gray-300 font-medium">${idx+1}</td>
-                    <td class="py-4 px-2 flex items-center gap-2 text-[14px]">
-                        ${isItemMode ? `<span class="text-xl">${info.f}</span>` : ''}
-                        <span class="font-medium text-gray-800">${info.n}</span>
+                <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+                    <td class="py-4 px-4 text-gray-400 font-semibold">${idx+1}</td>
+                    <td class="py-4 px-2">
+                        <div class="flex items-center gap-2">
+                            ${isItemMode ? `<span class="text-xl">${info.f}</span>` : ''}
+                            <div>
+                                <p class="font-semibold text-[#1d1d1f]">${info.n}</p>
+                                <p class="text-[11px] text-gray-400 font-mono mt-0.5">${item.originalPrice}</p>
+                            </div>
+                        </div>
                     </td>
-                    <td class="py-4 px-2 text-right text-gray-400 text-[12px] font-mono">${item.originalPrice}</td>
-                    <td class="py-4 px-6 text-right font-bold text-gray-900">¥${item.cnyPrice.toFixed(2)}</td>
+                    <td class="py-4 px-4 text-right">
+                        <p class="font-bold text-[15px] ${idx===0 && isItemMode ? 'text-apple-blue' : 'text-[#1d1d1f]'}">¥${item.cnyPrice.toFixed(2)}</p>
+                    </td>
                 </tr>`;
             });
             document.getElementById('priceTable').innerHTML = tableHtml;
