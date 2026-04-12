@@ -23,10 +23,10 @@ module.exports = async function(req, res) {
     });
   }
 
-  // 深拷贝，防止污染全局配置
   const targetApp = { ...foundApp };
 
-  const cacheKey = `compare:v4:${targetApp.id}`;
+  // 🌟 核心：缓存版本升级为 v5，强制抛弃之前存了坏图的旧缓存！
+  const cacheKey = `compare:v5:${targetApp.id}`;
 
   const cachedData = await getCache(cacheKey);
   if (cachedData) return res.status(200).json({ status: 'success', source: 'cache', data: cachedData });
@@ -35,18 +35,18 @@ module.exports = async function(req, res) {
   if (!gotLock) return res.status(429).json({ status: 'processing', message: '正在全网火速拉取数据，请5秒后刷新...' });
 
   try {
-    // 🌟 核心修复：在安全的服务器端，直接调苹果接口拿 512x512 高清大图和本体价格
+    // 获取最新高清图标
     try {
       const itunesRes = await fetch(`https://itunes.apple.com/lookup?id=${targetApp.id}&country=cn`);
       const itunesData = await itunesRes.json();
       if (itunesData.results && itunesData.results.length > 0) {
         const result = itunesData.results[0];
-        // 提取 512 高清图
-        targetApp.icon = result.artworkUrl512 || result.artworkUrl100.replace('100x100bb', '512x512bb');
+        // 强制保障原图或 512 图存在
+        targetApp.icon = result.artworkUrl512 || (result.artworkUrl100 ? result.artworkUrl100.replace('100x100bb', '512x512bb') : null);
         targetApp.priceStr = result.formattedPrice || (result.price === 0 ? '免费' : `¥${result.price}`);
       }
     } catch(e) {
-      console.warn('获取高清图失败，使用空图兜底');
+      console.warn('iTunes Lookup Failed');
     }
 
     let liveRates = await getCache('exchange_rates_cny');
