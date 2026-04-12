@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
     
+    <meta name="theme-color" content="#f5f5f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AppPrice">
     <meta name="referrer" content="no-referrer">
 
     <title>AppPrice - App Store 全球比价</title>
     
-    <meta name="apple-mobile-web-app-capable" content="yes"> <meta name="apple-mobile-web-app-status-bar-style" content="default"> <meta name="apple-mobile-web-app-title" content="AppPrice"> <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
@@ -17,27 +21,25 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        /* 加厚版毛玻璃，防止文字顶穿 */
         .apple-nav {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(245, 245, 247, 0.92);
+            backdrop-filter: saturate(200%) blur(24px);
+            -webkit-backdrop-filter: saturate(200%) blur(24px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .today-card {
-            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.15);
             transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
         }
         .today-card:hover { transform: scale(1.02); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2); }
 
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #0071e3; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        .loader { border: 2px solid #e5e5ea; border-top: 2px solid #0071e3; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .text-apple-blue { color: #0071e3; }
-        .bg-apple-blue { background-color: #0071e3; }
     </style>
 </head>
-<body class="text-[#1d1d1f] antialiased min-h-screen flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+<body class="text-[#1d1d1f] antialiased min-h-screen flex flex-col">
 
     <header class="apple-nav fixed top-0 w-full z-50 pt-[env(safe-area-inset-top)]">
         <div class="max-w-[1000px] mx-auto px-4 h-14 flex justify-between items-center">
@@ -51,8 +53,7 @@
                     <svg class="w-4 h-4 absolute left-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     <input type="text" id="searchInput" placeholder="游戏、App 等..." class="w-full bg-transparent text-[14px] outline-none" autocomplete="off" onkeypress="if(event.key === 'Enter') doSearch(this.value)">
                 </div>
-                <div id="searchSuggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-3xl border border-gray-100 rounded-[14px] shadow-2xl overflow-hidden max-h-[300px] overflow-y-auto no-scrollbar">
-                    </div>
+                <div id="searchSuggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-3xl border border-gray-100 rounded-[14px] shadow-2xl overflow-hidden max-h-[300px] overflow-y-auto no-scrollbar"></div>
             </div>
 
             <div class="text-[12px] font-medium text-gray-500 hidden md:block flex-shrink-0">
@@ -63,7 +64,7 @@
 
     <main class="w-full max-w-[1000px] mx-auto px-4 pt-24 pb-20 flex-grow relative z-10">
         
-        <div id="globalLoader" class="hidden absolute inset-0 z-40 bg-[#f5f5f7]/80 backdrop-blur-sm flex flex-col items-center pt-32">
+        <div id="globalLoader" class="hidden fixed inset-0 z-40 bg-[#f5f5f7]/80 backdrop-blur-sm flex flex-col items-center justify-center">
             <div class="loader mb-4"></div>
             <p class="text-[14px] font-medium text-gray-500">正在连接全球 App Store...</p>
         </div>
@@ -75,22 +76,19 @@
                 <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-80"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User"></div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="appGrid"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="appGrid">
+                </div>
         </div>
 
         <div id="detailView" class="hidden animate-fade-in">
-            <div class="flex flex-col md:flex-row gap-6 items-start border-b border-gray-200 pb-8 mb-6">
-                <div id="appIconBox" class="w-[100px] h-[100px] md:w-[118px] md:h-[118px] rounded-[22px] md:rounded-[26px] bg-white border border-black/5 flex-shrink-0 overflow-hidden shadow-sm"></div>
-                <div class="flex-grow pt-1">
-                    <h1 id="appNameTitle" class="text-[24px] md:text-[28px] font-bold tracking-tight text-[#1d1d1f] leading-tight">App Name</h1>
-                    <p id="appDevTitle" class="text-[14px] md:text-[15px] text-gray-500 mt-1 mb-4">Developer</p>
-                    <div class="flex items-center gap-4">
-                        <button class="bg-apple-blue text-white font-bold text-[14px] md:text-[15px] px-6 py-1.5 rounded-full hover:bg-blue-600 transition">获取</button>
-                        <button onclick="location.reload()" class="bg-gray-200/80 text-apple-blue w-8 h-8 rounded-full flex items-center justify-center font-bold hover:bg-gray-300 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                    </div>
+            
+            <div class="bg-white rounded-[24px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-black/5 mb-8 flex items-center gap-4 transition-all">
+                <img id="detailIcon" src="" class="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[16px] md:rounded-[18px] border border-black/5 flex-shrink-0 object-cover shadow-sm bg-gray-100">
+                <div class="flex-grow overflow-hidden">
+                    <h1 id="detailName" class="text-[18px] md:text-[20px] font-bold text-[#1d1d1f] tracking-tight truncate leading-tight">加载中...</h1>
+                    <p id="detailDev" class="text-[13px] md:text-[14px] text-gray-500 truncate mt-0.5">Developer</p>
                 </div>
+                <button class="bg-[#0071e3] text-white font-bold text-[14px] px-5 py-1.5 rounded-full flex-shrink-0 hover:bg-blue-600 transition shadow-sm">获取</button>
             </div>
 
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -106,7 +104,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div class="lg:col-span-7">
                     <h3 id="tableTitle" class="text-[17px] font-semibold mb-3">价格排行</h3>
-                    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                    <div class="bg-white rounded-[20px] border border-gray-200 overflow-hidden shadow-sm">
                         <table class="w-full text-[14px]">
                             <thead>
                                 <tr class="border-b border-gray-100 text-gray-500 bg-gray-50/50">
@@ -122,7 +120,7 @@
 
                 <div class="lg:col-span-5 space-y-4">
                     <h3 class="text-[17px] font-semibold mb-3">全球最低价</h3>
-                    <div class="bg-[#1d1d1f] rounded-2xl p-6 text-white shadow-lg">
+                    <div class="bg-[#1d1d1f] rounded-[24px] p-6 text-white shadow-lg">
                         <div class="flex items-center gap-2 mb-2">
                             <span id="bestFlag" class="text-2xl">🌍</span>
                             <span id="bestName" class="font-semibold text-gray-300">地区名称</span>
@@ -132,12 +130,12 @@
                                 <p class="text-sm text-gray-400 mb-1" id="bestOriginal">原价: -</p>
                                 <div id="bestCny" class="text-[40px] font-bold tracking-tight leading-none">¥0.00</div>
                             </div>
-                            <div id="bestBadge" class="bg-apple-blue text-[12px] font-bold px-2 py-1 rounded mb-1">最优选</div>
+                            <div id="bestBadge" class="bg-[#0071e3] text-[12px] font-bold px-3 py-1 rounded-md mb-1">最优选</div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 flex items-start gap-4 cursor-pointer hover:bg-gray-50 transition shadow-sm">
-                        <div class="w-10 h-10 bg-blue-50 text-apple-blue rounded-full flex items-center justify-center flex-shrink-0">
+                    <div class="bg-white rounded-[20px] p-5 border border-gray-200 flex items-start gap-4 cursor-pointer hover:bg-gray-50 transition shadow-sm">
+                        <div class="w-10 h-10 bg-blue-50 text-[#0071e3] rounded-full flex items-center justify-center flex-shrink-0">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         </div>
                         <div>
@@ -150,14 +148,14 @@
         </div>
 
         <div id="vipPrompt" class="hidden fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-            <div class="bg-white w-full max-w-sm rounded-2xl p-6 text-center shadow-2xl">
-                <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-apple-blue">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <div class="bg-white w-full max-w-sm rounded-[28px] p-8 text-center shadow-2xl">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-5 text-[#0071e3]">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
-                <h3 class="text-[19px] font-bold mb-2">应用暂未收录</h3>
-                <p id="vipMsg" class="text-[14px] text-gray-500 mb-6 leading-relaxed">该应用暂不支持免费查询。</p>
-                <button onclick="location.reload()" class="w-full bg-apple-blue text-white font-bold py-3 rounded-xl mb-3 hover:bg-blue-600 transition">升级 VIP 解锁全网检索</button>
-                <button onclick="document.getElementById('vipPrompt').classList.add('hidden')" class="w-full text-apple-blue text-[14px] font-semibold py-2">取消</button>
+                <h3 class="text-[20px] font-bold mb-2 tracking-tight">应用暂未收录</h3>
+                <p id="vipMsg" class="text-[14px] text-gray-500 mb-8 leading-relaxed">该应用暂不支持免费查询。</p>
+                <button onclick="location.reload()" class="w-full bg-[#0071e3] text-white font-bold py-3.5 rounded-xl mb-3 hover:bg-blue-600 transition shadow-md">升级 VIP 解锁全网检索</button>
+                <button onclick="document.getElementById('vipPrompt').classList.add('hidden')" class="w-full text-[#0071e3] text-[14px] font-semibold py-2">取消</button>
             </div>
         </div>
 
@@ -166,35 +164,54 @@
     <script>
         document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
 
+        // 首页结构，图标和名字将由客户端直连苹果接口实时拉取，永不裂图！
         const HOT_APPS = [
-            { id:'6448311069', name:'ChatGPT', desc:'The official app by OpenAI.', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/95/9b/a6/959ba6d5-4523-bd77-0d92-ec7f3ca69db0/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/100x100bb.jpg', bg: 'from-green-400 to-emerald-600' },
-            { id:'324684580', name:'Spotify', desc:'Music and podcasts.', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/21/ee/ff/21eeffb0-bd5b-5942-5fba-03619ea019a8/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.jpg', bg: 'from-gray-800 to-black' },
-            { id:'364709193', name:'Netflix', desc:'Watch TV shows and movies.', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/80/7e/ab/807eab79-11ba-b2cb-4235-ef6daeeb8e86/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.jpg', bg: 'from-red-500 to-red-800' },
-            { id:'686449807', name:'Telegram', desc:'Fast and secure messaging.', icon:'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a4/09/b3/a409b30c-2559-994c-8bb2-f8cce06c9a93/AppIcon-1x_U007emarketing-0-7-0-85-220.png/100x100bb.jpg', bg: 'from-blue-400 to-blue-600' }
+            { id:'6448311069', bg: 'from-green-400 to-emerald-600', tag: 'AI TOOL' },
+            { id:'324684580', bg: 'from-gray-800 to-black', tag: 'MUSIC' },
+            { id:'364709193', bg: 'from-red-500 to-red-800', tag: 'ENTERTAINMENT' },
+            { id:'686449807', bg: 'from-blue-400 to-blue-600', tag: 'SOCIAL' }
         ];
 
-        window.onload = () => {
+        window.onload = async () => {
             const grid = document.getElementById('appGrid');
             HOT_APPS.forEach(app => {
+                // 先注入漂亮的骨架卡片
                 grid.innerHTML += `
-                    <div onclick="doSearch('${app.id}')" class="today-card relative h-[280px] rounded-3xl overflow-hidden cursor-pointer bg-gradient-to-br ${app.bg} text-white p-6 flex flex-col justify-between">
+                    <div id="card-${app.id}" onclick="doSearch('${app.id}')" class="today-card relative h-[280px] rounded-[28px] overflow-hidden cursor-pointer bg-gradient-to-br ${app.bg} text-white p-6 flex flex-col justify-between shadow-sm">
                         <div>
-                            <p class="text-[13px] font-semibold opacity-80 uppercase tracking-wide mb-1">FEATURED</p>
-                            <h2 class="text-3xl font-bold leading-tight">${app.name}</h2>
+                            <p class="text-[12px] font-bold opacity-80 uppercase tracking-wider mb-1">${app.tag}</p>
+                            <h2 class="text-[28px] font-bold leading-tight app-name-ph tracking-tight">Loading...</h2>
                         </div>
-                        <div class="flex items-center gap-4 bg-black/20 backdrop-blur-md p-3 rounded-2xl border border-white/10">
-                            <img src="${app.icon}" class="w-12 h-12 rounded-[10px]">
-                            <div class="flex-grow">
-                                <p class="text-[14px] font-bold">${app.name}</p>
-                                <p class="text-[11px] opacity-80 line-clamp-1">${app.desc}</p>
+                        <div class="flex items-center gap-3 bg-black/20 backdrop-blur-md p-3 rounded-[20px] border border-white/10">
+                            <div class="w-[50px] h-[50px] rounded-[12px] bg-white/20 animate-pulse app-icon-ph flex-shrink-0"></div>
+                            <div class="flex-grow overflow-hidden">
+                                <p class="text-[14px] font-bold app-name-ph truncate">App</p>
+                                <p class="text-[11px] opacity-80 app-desc-ph truncate">Fetching data</p>
                             </div>
-                            <button class="bg-white/20 text-white font-bold text-[13px] px-4 py-1.5 rounded-full">查看</button>
+                            <button class="bg-white/20 text-white font-bold text-[13px] px-4 py-1.5 rounded-full flex-shrink-0">查看</button>
                         </div>
                     </div>`;
             });
+
+            // 实时去苹果查最新的图标和名字
+            try {
+                const ids = HOT_APPS.map(a => a.id).join(',');
+                const res = await fetch(`https://itunes.apple.com/lookup?id=${ids}&country=cn`);
+                const data = await res.json();
+                data.results.forEach(info => {
+                    const card = document.getElementById(`card-${info.trackId}`);
+                    if(card) {
+                        const names = card.querySelectorAll('.app-name-ph');
+                        names[0].innerText = info.trackName;
+                        names[1].innerText = info.trackName;
+                        card.querySelector('.app-icon-ph').outerHTML = `<img src="${info.artworkUrl100}" class="w-[50px] h-[50px] rounded-[12px] shadow-sm flex-shrink-0">`;
+                        card.querySelector('.app-desc-ph').innerText = info.primaryGenreName;
+                    }
+                });
+            } catch(e) { console.log('Home page icons fetch failed'); }
         };
 
-        // ================= 🔍 极速联想词逻辑 (调用 Apple 官方 API) =================
+        // ================= 🔍 官方联想词逻辑 =================
         const searchInput = document.getElementById('searchInput');
         const searchBox = document.getElementById('searchSuggestions');
         let searchTimeout;
@@ -202,23 +219,15 @@
         searchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             const query = e.target.value.trim();
-            
-            if (!query) {
-                searchBox.classList.add('hidden');
-                return;
-            }
+            if (!query) { searchBox.classList.add('hidden'); return; }
 
-            // 防抖：用户停止打字 300ms 后才去请求
             searchTimeout = setTimeout(async () => {
                 try {
-                    // 直接调用 Apple 官方接口，原汁原味
                     const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&country=cn&entity=software&limit=5`);
                     const data = await res.json();
-                    
                     if (data.results && data.results.length > 0) {
                         let html = '';
                         data.results.forEach(app => {
-                            // 将单引号转义防止 HTML 错误
                             const safeName = app.trackName.replace(/'/g, "\\'");
                             html += `
                             <div onclick="selectSuggestion('${app.trackId}', '${safeName}')" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition border-b border-gray-100 last:border-0">
@@ -227,7 +236,6 @@
                                     <h4 class="text-[14px] font-semibold text-[#1d1d1f] truncate">${app.trackName}</h4>
                                     <p class="text-[12px] text-gray-500 truncate">${app.artistName}</p>
                                 </div>
-                                <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                             </div>`;
                         });
                         searchBox.innerHTML = html;
@@ -235,26 +243,22 @@
                     } else {
                         searchBox.classList.add('hidden');
                     }
-                } catch (err) {
-                    console.error("搜索联想失败", err);
-                }
+                } catch (err) {}
             }, 300);
         });
 
-        // 点击页面空白处关闭下拉框
         document.addEventListener('click', (e) => {
             if (!document.getElementById('searchContainer').contains(e.target)) {
                 searchBox.classList.add('hidden');
             }
         });
 
-        // 点击联想词执行搜索
         function selectSuggestion(appId, appName) {
             searchInput.value = appName;
             searchBox.classList.add('hidden');
-            doSearch(appId); // 拿 ID 去后端查
+            doSearch(appId);
         }
-        // =========================================================================
+        // ==========================================================
 
         let currentData = null;
         let viewMode = 'item'; 
@@ -263,12 +267,20 @@
         async function doSearch(query) {
             const app = query || searchInput.value.trim();
             if(!app) return;
-            searchBox.classList.add('hidden'); // 关闭下拉菜单
+            searchBox.classList.add('hidden');
 
             document.getElementById('globalLoader').classList.remove('hidden');
             try {
-                const res = await fetch(`/api/compare?app=${encodeURIComponent(app)}`);
-                const json = await res.json();
+                // 🚀 并发请求：后端查价格的同时，前端直接去苹果接口拿最新的高清大图！
+                let itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(app)}&limit=1&country=cn&entity=software`;
+                if (/^\d+$/.test(app)) itunesUrl = `https://itunes.apple.com/lookup?id=${app}&country=cn`; // 如果是数字ID，直接 Lookup
+
+                const [priceRes, itunesRes] = await Promise.all([
+                    fetch(`/api/compare?app=${encodeURIComponent(app)}`),
+                    fetch(itunesUrl).catch(() => null)
+                ]);
+
+                const json = await priceRes.json();
                 document.getElementById('globalLoader').classList.add('hidden');
 
                 if (json.isVipPrompt) {
@@ -279,14 +291,25 @@
                 if (json.error) return alert(json.message || json.error);
 
                 currentData = json.data;
+
+                // 用刚查到的苹果官方高清数据，覆盖掉后端可能过期的写死数据
+                try {
+                    const itunesData = await itunesRes.json();
+                    if(itunesData.results && itunesData.results.length > 0) {
+                        currentData.app.icon = itunesData.results[0].artworkUrl100; // 高清图
+                        currentData.app.name = itunesData.results[0].trackName;
+                        currentData.app.developer = itunesData.results[0].artistName;
+                    }
+                } catch(e) {}
                 
                 document.getElementById('homeView').classList.add('hidden');
                 document.getElementById('detailView').classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' }); // 自动滚到顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                document.getElementById('appIconBox').innerHTML = `<img src="${currentData.app.icon}" class="w-full h-full object-cover">`;
-                document.getElementById('appNameTitle').innerText = currentData.app.name;
-                document.getElementById('appDevTitle').innerText = currentData.app.developer;
+                // 填充一长溜的 Banner 头部
+                document.getElementById('detailIcon').src = currentData.app.icon;
+                document.getElementById('detailName').innerText = currentData.app.name;
+                document.getElementById('detailDev').innerText = currentData.app.developer;
 
                 switchMode('item');
             } catch (e) {
@@ -297,8 +320,8 @@
 
         function switchMode(mode) {
             viewMode = mode;
-            document.getElementById('tabItem').className = mode === 'item' ? 'flex-1 py-1 rounded-[7px] bg-white shadow-sm text-black font-semibold' : 'flex-1 py-1 rounded-[7px] text-gray-500 hover:text-black transition';
-            document.getElementById('tabRegion').className = mode === 'region' ? 'flex-1 py-1 rounded-[7px] bg-white shadow-sm text-black font-semibold' : 'flex-1 py-1 rounded-[7px] text-gray-500 hover:text-black transition';
+            document.getElementById('tabItem').className = mode === 'item' ? 'flex-1 py-1.5 rounded-[7px] bg-white shadow-sm text-black font-semibold' : 'flex-1 py-1.5 rounded-[7px] text-gray-500 hover:text-black transition';
+            document.getElementById('tabRegion').className = mode === 'region' ? 'flex-1 py-1.5 rounded-[7px] bg-white shadow-sm text-black font-semibold' : 'flex-1 py-1.5 rounded-[7px] text-gray-500 hover:text-black transition';
             
             const dataSource = mode === 'item' ? currentData.compareData.byItem : currentData.compareData.byRegion;
             const keys = Object.keys(dataSource);
@@ -312,7 +335,7 @@
             let pillsHtml = '';
             keys.forEach((key, i) => {
                 const displayName = mode === 'item' ? key : (REGION_MAP[key]?.f + ' ' + dataSource[key].name);
-                const activeClass = i === 0 ? 'bg-gray-800 text-white border-transparent font-semibold' : 'bg-transparent text-[#1d1d1f] border-gray-300 hover:bg-gray-100';
+                const activeClass = i === 0 ? 'bg-gray-800 text-white border-transparent font-semibold shadow-md' : 'bg-transparent text-[#1d1d1f] border-gray-300 hover:bg-gray-100';
                 pillsHtml += `<button onclick="renderTable('${key}', this)" class="iap-pill whitespace-nowrap flex-shrink-0 px-4 py-1.5 rounded-full border text-[13px] transition-all cursor-pointer ${activeClass}">${displayName}</button>`;
             });
             document.getElementById('iapListContainer').innerHTML = pillsHtml;
@@ -322,7 +345,7 @@
         function renderTable(key, el) {
             if (el) {
                 document.querySelectorAll('.iap-pill').forEach(i => i.className = 'iap-pill whitespace-nowrap flex-shrink-0 px-4 py-1.5 rounded-full border text-[13px] transition-all cursor-pointer bg-transparent text-[#1d1d1f] border-gray-300 hover:bg-gray-100');
-                el.className = 'iap-pill whitespace-nowrap flex-shrink-0 px-4 py-1.5 rounded-full border text-[13px] transition-all cursor-pointer bg-gray-800 text-white border-transparent font-semibold';
+                el.className = 'iap-pill whitespace-nowrap flex-shrink-0 px-4 py-1.5 rounded-full border text-[13px] transition-all cursor-pointer bg-gray-800 text-white border-transparent font-semibold shadow-md';
             }
 
             const isItemMode = viewMode === 'item';
@@ -346,14 +369,14 @@
                     <td class="py-4 px-2">
                         <div class="flex items-center gap-2">
                             ${isItemMode ? `<span class="text-xl">${info.f}</span>` : ''}
-                            <div>
-                                <p class="font-semibold text-[#1d1d1f]">${info.n}</p>
+                            <div class="overflow-hidden">
+                                <p class="font-semibold text-[#1d1d1f] truncate w-40 md:w-full">${info.n}</p>
                                 <p class="text-[11px] text-gray-400 font-mono mt-0.5">${item.originalPrice}</p>
                             </div>
                         </div>
                     </td>
                     <td class="py-4 px-4 text-right">
-                        <p class="font-bold text-[15px] ${idx===0 && isItemMode ? 'text-apple-blue' : 'text-[#1d1d1f]'}">¥${item.cnyPrice.toFixed(2)}</p>
+                        <p class="font-bold text-[15px] ${idx===0 && isItemMode ? 'text-[#0071e3]' : 'text-[#1d1d1f]'}">¥${item.cnyPrice.toFixed(2)}</p>
                     </td>
                 </tr>`;
             });
