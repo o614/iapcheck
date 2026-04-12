@@ -3,7 +3,7 @@ const { getCache, setCache, acquireLock, releaseLock } = require('../lib/storage
 const { fetchAllRegions } = require('../lib/fetcher');
 const { REGIONS } = require('../lib/config');
 
-export default async function handler(req, res) {
+module.exports = async function(req, res) {
   // 1. CORS 配置 (允许你的前端域名跨域调用)
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*'); 
