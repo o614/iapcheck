@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0">
+    <title>AppPrice - 全球比价看板</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AppPrice">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --apple-blue: #0071e3; --bg-color: #f5f5f7; }
+        body { background-color: var(--bg-color); -webkit-tap-highlight-color: transparent; }
+        @media (max-width: 768px) { ::-webkit-scrollbar { display: none; } }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); }
+        .glass-pill { background: rgba(255, 255, 255, 0.9); backdrop-filter: saturate(200%) blur(25px); -webkit-backdrop-filter: saturate(200%) blur(25px); }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #0071e3; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="font-sans text-[#1d1d1f] antialiased pb-32 md:pb-8">
+
+    <header class="glass sticky top-0 z-50 border-b border-black/5 pt-[env(safe-area-inset-top)]">
+        <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2 font-bold text-[19px] tracking-tight cursor-pointer" onclick="location.reload()">
+                <span class="bg-[#0071e3] text-white w-7 h-7 flex items-center justify-center rounded-lg text-sm">P</span>
+                AppPrice
+            </div>
+            
+            <div class="flex flex-grow max-w-md mx-4 md:mx-8 relative">
+                <input type="text" id="searchInput" placeholder="搜索应用..." value="ChatGPT" 
+                       class="w-full bg-black/5 border-none rounded-full py-1.5 pl-10 pr-16 text-[13px] focus:ring-2 focus:ring-[#0071e3]/30 outline-none transition"
+                       onkeypress="if(event.key === 'Enter') doSearch()">
+                <svg class="w-4 h-4 absolute left-3 top-2.5 text-black/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <button onclick="doSearch()" class="absolute right-1 top-1 bg-[#0071e3] text-white text-[11px] px-3 py-1 rounded-full hover:bg-blue-600 transition">查询</button>
+            </div>
+
+            <div class="hidden md:flex items-center gap-6">
+                <a href="#" class="text-black/60 hover:text-black text-[14px] font-medium transition">热门发现</a>
+                <div class="flex items-center gap-2 text-xs font-medium bg-white border border-black/10 px-3 py-1.5 rounded-full shadow-sm">
+                    <span class="text-black/50">对比基准：</span><span class="text-[#0071e3] font-bold">🇨🇳 CNY (¥)</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 pt-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+        <aside class="md:col-span-4 space-y-6">
+            <div id="appInfoCard" class="bg-white rounded-2xl p-5 shadow-sm border border-black/5 flex items-center md:items-start gap-4">
+                <div class="w-16 h-16 md:w-20 md:h-20 rounded-[16px] md:rounded-[20px] bg-gray-100 border border-black/5 flex-shrink-0 flex items-center justify-center text-gray-300">Icon</div>
+                <div class="overflow-hidden">
+                    <h1 id="appNameTitle" class="text-lg md:text-xl font-bold tracking-tight truncate">等待查询...</h1>
+                    <p id="appDevTitle" class="text-[13px] text-black/50 mt-0.5 truncate">输入应用名称开始比价</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-black/5 overflow-hidden">
+                <div class="p-2 bg-gray-100/50 flex gap-1">
+                    <button id="modeBtnItem" class="flex-1 py-1.5 text-[13px] font-semibold rounded-lg bg-white shadow-sm text-black">按项目比价</button>
+                    <button id="modeBtnRegion" class="flex-1 py-1.5 text-[13px] font-medium rounded-lg text-black/50">按国家查看</button>
+                </div>
+                <div id="iapListContainer" class="p-4 space-y-1.5 text-sm text-gray-400 text-center min-h-[100px] flex items-center justify-center">
+                    请先在上方搜索应用
+                </div>
+            </div>
+        </aside>
+
+        <section class="md:col-span-8 space-y-6">
+            <div id="heroCard" class="bg-[#0071e3] rounded-2xl p-6 text-white shadow-xl shadow-[#0071e3]/20 relative overflow-hidden transition-all duration-500 opacity-50">
+                <div class="absolute right-[-10%] top-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-white/20 text-white text-[10px] font-bold px-2 py-1 rounded-sm tracking-wider uppercase">Global Best Price</span>
+                        <span id="bestFlag" class="text-3xl">🌍</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
+                        <div>
+                            <h2 id="bestName" class="text-xl md:text-2xl font-bold">等待结果</h2>
+                            <p id="bestOriginal" class="text-white/60 text-[12px] md:text-sm mt-0.5">-</p>
+                        </div>
+                        <div class="text-left sm:text-right">
+                            <div id="bestCny" class="text-4xl md:text-5xl font-black tracking-tighter">¥ 0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white md:rounded-2xl shadow-sm border-y md:border border-black/5 -mx-4 md:mx-0 overflow-hidden">
+                <div class="px-6 py-3 border-b border-black/5 bg-gray-50 flex justify-between items-center">
+                    <h3 class="font-bold text-sm text-black/80">价格排行表</h3>
+                    <div id="globalLoader" class="hidden"><div class="loader"></div></div>
+                </div>
+                <div id="priceTable" class="divide-y divide-black/5 min-h-[200px] flex flex-col items-center justify-center text-gray-400 text-sm">
+                    等待数据载入...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-[360px] z-50">
+        <div class="glass-pill border border-black/5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full px-8 py-3 flex justify-between items-center">
+            <div class="flex flex-col items-center cursor-pointer transform transition active:scale-95 text-[#0071e3]">
+                <svg class="w-[22px] h-[22px]" fill="currentColor" viewBox="0 0 24 24"><path d="M10 21v-6.5h4V21h5v-8.5H22L12 3 2 12.5h3V21h5z"></path></svg>
+                <span class="text-[10px] mt-1 font-bold">比价</span>
+            </div>
+            <div class="flex flex-col items-center opacity-40 cursor-pointer text-black">
+                <svg class="w-[22px] h-[22px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <span class="text-[10px] mt-1 font-medium">热门</span>
+            </div>
+            <div class="flex flex-col items-center opacity-40 cursor-pointer text-black">
+                <svg class="w-[22px] h-[22px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <span class="text-[10px] mt-1 font-medium">配置</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = null;
+        const FLAGS = { 'us':'🇺🇸', 'cn':'🇨🇳', 'jp':'🇯🇵', 'tr':'🇹🇷', 'ng':'🇳🇬', 'eg':'🇪🇬', 'pk':'🇵🇰', 'in':'🇮🇳', 'br':'🇧🇷', 'ar':'🇦🇷' };
+
+        async function doSearch() {
+            const app = document.getElementById('searchInput').value.trim();
+            if(!app) return;
+
+            document.getElementById('globalLoader').classList.remove('hidden');
+            document.getElementById('iapListContainer').innerHTML = '<div class="loader"></div>';
+
+            try {
+                const res = await fetch(`/api/compare?app=${encodeURIComponent(app)}`);
+                const json = await res.json();
+                document.getElementById('globalLoader').classList.add('hidden');
+
+                if (json.status === 'processing') {
+                    document.getElementById('iapListContainer').innerHTML = `<p class="text-orange-500 px-4">${json.message}</p>`;
+                    return;
+                }
+                if (json.error) {
+                    document.getElementById('iapListContainer').innerHTML = `<p class="text-red-500">${json.error}</p>`;
+                    return;
+                }
+
+                currentData = json.data;
+                renderAppInfo(currentData.app);
+                renderIapList(currentData.compareData);
+            } catch (e) {
+                document.getElementById('globalLoader').classList.add('hidden');
+                document.getElementById('iapListContainer').innerHTML = '查询失败，请检查网络';
+            }
+        }
+
+        function renderAppInfo(app) {
+            document.getElementById('appInfoCard').innerHTML = `
+                <img src="${app.icon}" class="w-16 h-16 md:w-20 md:h-20 rounded-[20px] shadow-sm">
+                <div class="overflow-hidden">
+                    <h1 class="text-lg md:text-xl font-bold truncate">${app.name}</h1>
+                    <p class="text-[13px] text-black/50 truncate">${app.developer}</p>
+                    <div class="mt-2"><span class="text-[10px] font-bold bg-[#0071e3] text-white px-2 py-0.5 rounded">ID: ${app.id}</span></div>
+                </div>
+            `;
+        }
+
+        function renderIapList(compareData) {
+            const items = Object.keys(compareData);
+            if (items.length === 0) {
+                document.getElementById('iapListContainer').innerHTML = '无内购数据';
+                return;
+            }
+            let html = '<div class="w-full space-y-1 p-2">';
+            items.forEach((name, i) => {
+                const active = i === 0 ? 'bg-[#0071e3]/10 text-[#0071e3] border-[#0071e3]/20' : 'text-black/60 border-transparent hover:bg-gray-50';
+                html += `<div onclick="showCompare('${name}', this)" class="iap-item p-3 rounded-xl border text-[13px] font-semibold transition cursor-pointer flex justify-between items-center ${active}">
+                    <span class="truncate pr-2">${name}</span>
+                    ${i===0 ? '●' : ''}
+                </div>`;
+            });
+            html += '</div>';
+            document.getElementById('iapListContainer').innerHTML = html;
+            showCompare(items[0]);
+        }
+
+        function showCompare(itemName, el) {
+            if (el) {
+                document.querySelectorAll('.iap-item').forEach(i => i.classList.remove('bg-[#0071e3]/10', 'text-[#0071e3]', 'border-[#0071e3]/20'));
+                el.classList.add('bg-[#0071e3]/10', 'text-[#0071e3]', 'border-[#0071e3]/20');
+            }
+
+            const list = currentData.compareData[itemName];
+            const best = list[0];
+
+            document.getElementById('heroCard').style.opacity = '1';
+            document.getElementById('bestFlag').innerText = FLAGS[best.regionCode] || '🌍';
+            document.getElementById('bestName').innerText = best.regionName;
+            document.getElementById('bestOriginal').innerText = `当地原价: ${best.originalPrice}`;
+            document.getElementById('bestCny').innerText = `¥${best.cnyPrice.toFixed(2)}`;
+
+            let tableHtml = '';
+            list.forEach((item, idx) => {
+                tableHtml += `
+                <div class="flex items-center justify-between p-4 md:px-6 hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-4">
+                        <span class="w-4 text-center text-[13px] font-bold text-black/20">${idx+1}</span>
+                        <span class="text-2xl">${FLAGS[item.regionCode] || '🌍'}</span>
+                        <span class="font-semibold text-[15px]">${item.regionName}</span>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[17px] font-bold ${idx===0?'text-[#0071e3]':'text-black/80'}">¥${item.cnyPrice.toFixed(2)}</p>
+                        <p class="text-[11px] text-black/30">${item.originalPrice}</p>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('priceTable').innerHTML = tableHtml;
+        }
+    </script>
+</body>
+</html>
