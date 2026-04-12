@@ -1,0 +1,15 @@
+{
+  "name": "app-store-price-compare",
+  "version": "1.0.0",
+  "description": "Apple Store Global Price Comparison Tool",
+  "main": "api/compare.js",
+  "dependencies": {
+    "@vercel/kv": "^1.0.1"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "scripts": {
+    "start": "vercel dev"
+  }
+}
