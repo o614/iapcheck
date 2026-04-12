@@ -83,7 +83,7 @@
 
         <div id="detailView" class="hidden animate-fade-in">
             
-            <button onclick="goHome()" class="flex items-center gap-1 text-[#0071e3] font-semibold text-[17px] mb-4 -mt-4 md:-mt-4 hover:opacity-80 transition cursor-pointer">
+            <button onclick="goHome()" class="flex items-center gap-1 text-[#0071e3] font-semibold text-[17px] mb-4 -mt-10 md:-mt-4 hover:opacity-80 transition cursor-pointer">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
                 返回
             </button>
@@ -243,8 +243,9 @@
                         const names = card.querySelectorAll('.app-name-ph');
                         names[0].innerText = info.trackName;
                         names[1].innerText = info.trackName;
-                        // 🌟 直连苹果 CDN
-                        card.querySelector('.app-icon-ph').outerHTML = `<img src="${info.artworkUrl100}" referrerpolicy="no-referrer" class="w-[50px] h-[50px] rounded-[12px] shadow-sm flex-shrink-0">`;
+                        // 🌟 强行将 100x100 替换为 512x512 高清图，实现 Java 库的神级效果
+                        const highResImg = info.artworkUrl100.replace('100x100bb', '512x512bb');
+                        card.querySelector('.app-icon-ph').outerHTML = `<img src="${highResImg}" referrerpolicy="no-referrer" class="w-[50px] h-[50px] rounded-[12px] shadow-sm flex-shrink-0 object-cover">`;
                         card.querySelector('.app-desc-ph').innerText = info.primaryGenreName;
                     }
                 });
@@ -328,9 +329,11 @@
                         let html = '';
                         data.results.forEach(app => {
                             const safeName = app.trackName.replace(/'/g, "\\'");
+                            // 🌟 下拉框也全换成 512 高清图
+                            const highResImg = app.artworkUrl60.replace('60x60bb', '512x512bb');
                             html += `
                             <div onclick="selectSuggestion('${app.trackId}', '${safeName}')" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition border-b border-gray-100 last:border-0">
-                                <img src="${app.artworkUrl60}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-xl border border-black/5 shadow-sm">
+                                <img src="${highResImg}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-xl border border-black/5 shadow-sm object-cover">
                                 <div class="flex-grow overflow-hidden">
                                     <h4 class="text-[14px] font-semibold text-[#1d1d1f] truncate">${app.trackName}</h4>
                                     <p class="text-[12px] text-gray-500 truncate">${app.artistName}</p>
@@ -369,15 +372,8 @@
 
             document.getElementById('globalLoader').classList.remove('hidden');
             try {
-                let itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(app)}&limit=1&country=cn&entity=software`;
-                if (/^\d+$/.test(app)) itunesUrl = `https://itunes.apple.com/lookup?id=${app}&country=cn`; 
-
-                const [priceRes, itunesRes] = await Promise.all([
-                    fetch(`/api/compare?app=${encodeURIComponent(app)}`),
-                    fetch(itunesUrl).catch(() => null)
-                ]);
-
-                const json = await priceRes.json();
+                const res = await fetch(`/api/compare?app=${encodeURIComponent(app)}`);
+                const json = await res.json();
                 document.getElementById('globalLoader').classList.add('hidden');
 
                 if (json.isVipPrompt) {
@@ -388,22 +384,12 @@
                 if (json.error) return alert(json.message || json.error);
 
                 currentData = json.data;
-
-                try {
-                    const itunesData = await itunesRes.json();
-                    if(itunesData.results && itunesData.results.length > 0) {
-                        currentData.app.icon = itunesData.results[0].artworkUrl100; 
-                        currentData.app.name = itunesData.results[0].trackName;
-                        currentData.app.developer = itunesData.results[0].artistName;
-                        currentData.app.priceStr = itunesData.results[0].formattedPrice || (itunesData.results[0].price === 0 ? '免费' : `¥${itunesData.results[0].price}`);
-                    }
-                } catch(e) {}
                 
                 document.getElementById('homeView').classList.add('hidden');
                 document.getElementById('detailView').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                // 🌟 直连苹果 CDN
+                // 显示由后端保证传过来的 512x512 高清大图和价格徽章
                 document.getElementById('detailIcon').src = currentData.app.icon;
                 document.getElementById('detailName').innerText = currentData.app.name;
                 document.getElementById('detailDev').innerText = currentData.app.developer;
