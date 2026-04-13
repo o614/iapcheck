@@ -1,0 +1,30 @@
+# .github/workflows/cron.yml
+name: "Background Scraper Cron"
+
+on:
+  schedule:
+    # 每 48 小时运行一次 (cron 语法: 0 0 */2 * *)
+    - cron: "0 0 */2 * *"
+  workflow_dispatch: # 允许你在 GitHub 网页上随时手动点击运行
+
+jobs:
+  sync_data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install @vercel/kv dotenv
+
+      - name: Run Slow Scraper
+        # 从 GitHub Secrets 中读取 Vercel 数据库的密钥，注入给脚本
+        env:
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
+        run: node scripts/sync.js
