@@ -48,12 +48,11 @@
                 AppPrice
             </div>
             
-            <div class="relative flex-grow max-w-[360px] mx-4 md:mx-6 z-50" id="searchContainer">
+            <div class="relative flex-grow max-w-[360px] mx-4 md:mx-6 z-50">
                 <div class="flex items-center w-full bg-black/5 rounded-lg py-1.5 pl-9 pr-4 focus-within:bg-white focus-within:shadow-md focus-within:ring-2 focus-within:ring-[#0071e3]/40 transition-all duration-300">
                     <svg class="w-4 h-4 absolute left-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" id="searchInput" placeholder="游戏、App 等..." class="w-full bg-transparent text-[14px] outline-none" autocomplete="off" onkeypress="if(event.key === 'Enter') doSearch(this.value)">
+                    <input type="text" id="searchInput" placeholder="游戏、App 名称或 ID..." class="w-full bg-transparent text-[14px] outline-none" autocomplete="off" onkeypress="if(event.key === 'Enter') doSearch(this.value)">
                 </div>
-                <div id="searchSuggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-3xl border border-gray-100 rounded-[14px] shadow-2xl overflow-hidden max-h-[300px] overflow-y-auto no-scrollbar"></div>
             </div>
 
             <div class="text-[12px] font-medium text-gray-500 hidden md:block flex-shrink-0">
@@ -66,7 +65,7 @@
         
         <div id="globalLoader" class="hidden fixed inset-0 z-40 bg-[#f5f5f7]/80 backdrop-blur-sm flex flex-col items-center justify-center">
             <div class="loader mb-4"></div>
-            <p class="text-[14px] font-medium text-gray-500">正在连接全球 App Store...</p>
+            <p class="text-[14px] font-medium text-gray-500">正在为您安全抓取全球数据，请稍候...</p>
         </div>
 
         <div id="homeView" class="animate-fade-in block">
@@ -118,7 +117,7 @@
                             <thead>
                                 <tr class="border-b border-gray-100 text-gray-500 bg-gray-50/50">
                                     <th class="py-3 px-4 text-left font-medium w-12">#</th>
-                                    <th class="py-3 px-2 text-left font-medium">地区</th>
+                                    <th class="py-3 px-4 text-left font-medium">地区</th>
                                     <th class="py-3 px-4 text-right font-medium">折合 CNY</th>
                                 </tr>
                             </thead>
@@ -131,8 +130,7 @@
                     <h3 class="text-[17px] font-semibold mb-3">全球最低价</h3>
                     <div class="bg-[#1d1d1f] rounded-[24px] p-6 text-white shadow-lg">
                         <div class="flex items-center gap-2 mb-2">
-                            <span id="bestFlag" class="text-2xl">🌍</span>
-                            <span id="bestName" class="font-semibold text-gray-300">地区名称</span>
+                            <span id="bestName" class="font-semibold text-gray-300 text-lg">地区名称</span>
                         </div>
                         <div class="mt-4 flex items-end justify-between">
                             <div>
@@ -206,15 +204,15 @@
         const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
         document.getElementById('todayDate').innerText = `${d.getMonth() + 1}月${d.getDate()}日 ${days[d.getDay()]}`;
 
-        // 在 index.html 的 <script> 部分找到并替换 HOT_APPS
-const HOT_APPS = [
-    { id:'6448311069', bg: 'from-green-400 to-emerald-600', tag: 'AI TOOL' }, // ChatGPT
-    { id:'1645009083', bg: 'from-orange-400 to-red-500', tag: 'AI TOOL' },    // Claude
-    { id:'284815942', bg: 'from-blue-400 to-purple-600', tag: 'AI TOOL' },   // Gemini
-    { id:'1130498044', bg: 'from-blue-300 to-blue-500', tag: 'STORAGE' },    // iCloud+
-    { id:'544007664', bg: 'from-red-500 to-red-700', tag: 'VIDEO' },         // YouTube
-    { id:'364709193', bg: 'from-gray-800 to-black', tag: 'STREAMING' }       // Netflix
-];
+        // 🌟 严格按照你要求的 App 列表
+        const HOT_APPS = [
+            { id:'6448311069', bg: 'from-green-400 to-emerald-600', tag: 'AI TOOL' }, // ChatGPT
+            { id:'6473753684', bg: 'from-orange-400 to-red-500', tag: 'AI TOOL' },    // Claude
+            { id:'6477489729', bg: 'from-blue-400 to-purple-600', tag: 'AI TOOL' },   // Gemini
+            { id:'544007664', bg: 'from-red-500 to-red-700', tag: 'VIDEO' },         // YouTube
+            { id:'363590051', bg: 'from-gray-800 to-black', tag: 'STREAMING' },       // Netflix
+            { id:'835599320', bg: 'from-pink-500 to-black', tag: 'SOCIAL' }          // TikTok
+        ];
 
         window.onload = async () => {
             const grid = document.getElementById('appGrid');
@@ -238,7 +236,7 @@ const HOT_APPS = [
 
             try {
                 const ids = HOT_APPS.map(a => a.id).join(',');
-                const res = await fetch(`https://itunes.apple.com/lookup?id=${ids}&country=cn`);
+                const res = await fetch(`https://itunes.apple.com/lookup?id=${ids}&country=us`);
                 const data = await res.json();
                 data.results.forEach(info => {
                     const card = document.getElementById(`card-${info.trackId}`);
@@ -246,7 +244,6 @@ const HOT_APPS = [
                         const names = card.querySelectorAll('.app-name-ph');
                         names[0].innerText = info.trackName;
                         names[1].innerText = info.trackName;
-                        // 🌟 强行将 100x100 替换为 512x512 高清图，实现 Java 库的神级效果
                         const highResImg = info.artworkUrl100.replace('100x100bb', '512x512bb');
                         card.querySelector('.app-icon-ph').outerHTML = `<img src="${highResImg}" referrerpolicy="no-referrer" class="w-[50px] h-[50px] rounded-[12px] shadow-sm flex-shrink-0 object-cover">`;
                         card.querySelector('.app-desc-ph').innerText = info.primaryGenreName;
@@ -270,10 +267,8 @@ const HOT_APPS = [
                 }
                 
                 modal.classList.remove('hidden');
-                
                 card.style.transform = 'none';
                 const cRect = card.getBoundingClientRect();
-                
                 const startX = lastOriginRect.left + lastOriginRect.width/2 - (cRect.left + cRect.width/2);
                 const startY = lastOriginRect.top + lastOriginRect.height/2 - (cRect.top + cRect.height/2);
                 
@@ -315,63 +310,14 @@ const HOT_APPS = [
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        const searchInput = document.getElementById('searchInput');
-        const searchBox = document.getElementById('searchSuggestions');
-        let searchTimeout;
-
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            const query = e.target.value.trim();
-            if (!query) { searchBox.classList.add('hidden'); return; }
-
-            searchTimeout = setTimeout(async () => {
-                try {
-                    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&country=cn&entity=software&limit=5`);
-                    const data = await res.json();
-                    if (data.results && data.results.length > 0) {
-                        let html = '';
-                        data.results.forEach(app => {
-                            const safeName = app.trackName.replace(/'/g, "\\'");
-                            // 🌟 下拉框也全换成 512 高清图
-                            const highResImg = app.artworkUrl60.replace('60x60bb', '512x512bb');
-                            html += `
-                            <div onclick="selectSuggestion('${app.trackId}', '${safeName}')" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition border-b border-gray-100 last:border-0">
-                                <img src="${highResImg}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-xl border border-black/5 shadow-sm object-cover">
-                                <div class="flex-grow overflow-hidden">
-                                    <h4 class="text-[14px] font-semibold text-[#1d1d1f] truncate">${app.trackName}</h4>
-                                    <p class="text-[12px] text-gray-500 truncate">${app.artistName}</p>
-                                </div>
-                            </div>`;
-                        });
-                        searchBox.innerHTML = html;
-                        searchBox.classList.remove('hidden');
-                    } else {
-                        searchBox.classList.add('hidden');
-                    }
-                } catch (err) {}
-            }, 300);
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!document.getElementById('searchContainer').contains(e.target)) {
-                searchBox.classList.add('hidden');
-            }
-        });
-
-        function selectSuggestion(appId, appName) {
-            searchInput.value = appName;
-            searchBox.classList.add('hidden');
-            doSearch(appId);
-        }
-
         let currentData = null;
         let viewMode = 'item'; 
-        const REGION_MAP = { 'us':{f:'🇺🇸',n:'美国'}, 'cn':{f:'🇨🇳',n:'中国'}, 'jp':{f:'🇯🇵',n:'日本'}, 'tr':{f:'🇹🇷',n:'土耳其'}, 'ng':{f:'🇳🇬',n:'尼日利亚'}, 'eg':{f:'🇪🇬',n:'埃及'}, 'pk':{f:'🇵🇰',n:'巴基斯坦'}, 'in':{f:'🇮🇳',n:'印度'}, 'br':{f:'🇧🇷',n:'巴西'}, 'ar':{f:'🇦🇷',n:'阿根廷'} };
+        // 🌟 彻底移除表情旗帜
+        const REGION_MAP = { 'us':{n:'美国'}, 'cn':{n:'中国'}, 'hk':{n:'香港'}, 'tw':{n:'台湾'}, 'jp':{n:'日本'}, 'kr':{n:'韩国'}, 'tr':{n:'土耳其'}, 'ng':{n:'尼日利亚'}, 'eg':{n:'埃及'}, 'pk':{n:'巴基斯坦'}, 'in':{n:'印度'}, 'br':{n:'巴西'}, 'ar':{n:'阿根廷'} };
 
         async function doSearch(query) {
-            const app = query || searchInput.value.trim();
+            const app = query || document.getElementById('searchInput').value.trim();
             if(!app) return;
-            searchBox.classList.add('hidden');
 
             document.getElementById('globalLoader').classList.remove('hidden');
             try {
@@ -392,7 +338,6 @@ const HOT_APPS = [
                 document.getElementById('detailView').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                // 显示由后端保证传过来的 512x512 高清大图和价格徽章
                 document.getElementById('detailIcon').src = currentData.app.icon;
                 document.getElementById('detailName').innerText = currentData.app.name;
                 document.getElementById('detailDev').innerText = currentData.app.developer;
@@ -428,7 +373,8 @@ const HOT_APPS = [
 
             let pillsHtml = '';
             keys.forEach((key, i) => {
-                const displayName = mode === 'item' ? key : (REGION_MAP[key]?.f + ' ' + dataSource[key].name);
+                // 🌟 移除 info.f 引用
+                const displayName = mode === 'item' ? key : (REGION_MAP[key] ? REGION_MAP[key].n : dataSource[key].name);
                 const activeClass = i === 0 ? 'bg-gray-800 text-white border-transparent font-semibold shadow-md' : 'bg-transparent text-[#1d1d1f] border-gray-300 hover:bg-gray-100';
                 pillsHtml += `<button onclick="renderTable('${key}', this)" class="iap-pill whitespace-nowrap flex-shrink-0 px-4 py-1.5 rounded-full border text-[13px] transition-all cursor-pointer ${activeClass}">${displayName}</button>`;
             });
@@ -447,26 +393,23 @@ const HOT_APPS = [
             if(!list || list.length === 0) return;
 
             const best = isItemMode ? list[0] : list.sort((a,b)=>a.cnyPrice-b.cnyPrice)[0]; 
-            const bInfo = REGION_MAP[(best.regionCode || key).toLowerCase()] || {f:'🌍', n:best.regionName};
+            const bInfo = REGION_MAP[(best.regionCode || key).toLowerCase()] || {n:best.regionName};
             
             document.getElementById('bestCny').innerText = `¥${best.cnyPrice.toFixed(2)}`;
-            document.getElementById('bestFlag').innerText = bInfo.f;
+            // 🌟 移除冠军卡片的 Emoji 显示
             document.getElementById('bestName').innerText = isItemMode ? bInfo.n : best.name;
             document.getElementById('bestOriginal').innerText = `当地原价: ${best.originalPrice}`;
 
             let tableHtml = '';
             list.forEach((item, idx) => {
-                const info = isItemMode ? (REGION_MAP[item.regionCode.toLowerCase()] || {f:'🌍',n:item.regionName}) : {f:'',n:item.name};
+                const info = isItemMode ? (REGION_MAP[item.regionCode.toLowerCase()] || {n:item.regionName}) : {n:item.name};
                 tableHtml += `
                 <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
                     <td class="py-4 px-4 text-gray-400 font-semibold">${idx+1}</td>
-                    <td class="py-4 px-2">
-                        <div class="flex items-center gap-2">
-                            ${isItemMode ? `<span class="text-xl">${info.f}</span>` : ''}
-                            <div class="overflow-hidden">
-                                <p class="font-semibold text-[#1d1d1f] truncate w-40 md:w-full">${info.n}</p>
-                                <p class="text-[11px] text-gray-400 font-mono mt-0.5">${item.originalPrice}</p>
-                            </div>
+                    <td class="py-4 px-4">
+                        <div class="overflow-hidden">
+                            <p class="font-semibold text-[#1d1d1f] truncate w-40 md:w-full">${info.n}</p>
+                            <p class="text-[11px] text-gray-400 font-mono mt-0.5">${item.originalPrice}</p>
                         </div>
                     </td>
                     <td class="py-4 px-4 text-right">
