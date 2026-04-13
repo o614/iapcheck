@@ -25,23 +25,22 @@ module.exports = async function(req, res) {
 
   const targetApp = { ...foundApp };
 
-  // 🌟 核心：缓存版本升级为 v5，强制抛弃之前存了坏图的旧缓存！
-  const cacheKey = `compare:v5:${targetApp.id}`;
+  // 🌟 缓存版本升级到 v8，把之前吃数据的残缺缓存全部炸毁！
+  const cacheKey = `compare:v8:${targetApp.id}`;
 
   const cachedData = await getCache(cacheKey);
   if (cachedData) return res.status(200).json({ status: 'success', source: 'cache', data: cachedData });
 
   const gotLock = await acquireLock(cacheKey);
-  if (!gotLock) return res.status(429).json({ status: 'processing', message: '正在全网火速拉取数据，请5秒后刷新...' });
+  if (!gotLock) return res.status(429).json({ status: 'processing', message: '正在为您排队安全抓取全球数据，请 8 秒后刷新...' });
 
   try {
-    // 获取最新高清图标
     try {
-      const itunesRes = await fetch(`https://itunes.apple.com/lookup?id=${targetApp.id}&country=cn`);
+      // 🌟 核心修复：强制去美区 (us) 获取基础信息，保证 100% 能拿到图标！
+      const itunesRes = await fetch(`https://itunes.apple.com/lookup?id=${targetApp.id}&country=us`);
       const itunesData = await itunesRes.json();
       if (itunesData.results && itunesData.results.length > 0) {
         const result = itunesData.results[0];
-        // 强制保障原图或 512 图存在
         targetApp.icon = result.artworkUrl512 || (result.artworkUrl100 ? result.artworkUrl100.replace('100x100bb', '512x512bb') : null);
         targetApp.priceStr = result.formattedPrice || (result.price === 0 ? '免费' : `¥${result.price}`);
       }
@@ -72,19 +71,12 @@ module.exports = async function(req, res) {
       
       iapList.sort((a, b) => a.cnyPrice - b.cnyPrice);
 
-      const nameCountMap = {};
-      const processedIaps = iapList.map(iap => {
-          const count = (nameCountMap[iap.name] || 0) + 1;
-          nameCountMap[iap.name] = count;
-          const uniqueName = count > 1 ? `${iap.name} #${count}` : iap.name;
-          return { ...iap, uniqueName };
-      });
+      // 🌟 废除愚蠢的加后缀逻辑，原原本本存入
+      byRegion[regionCode] = { name: regionObj.name, flag: regionObj.flag, iaps: iapList };
 
-      byRegion[regionCode] = { name: regionObj.name, flag: regionObj.flag, iaps: processedIaps };
-
-      processedIaps.forEach(iap => {
-        if (!byItem[iap.uniqueName]) byItem[iap.uniqueName] = [];
-        byItem[iap.uniqueName].push({
+      iapList.forEach(iap => {
+        if (!byItem[iap.name]) byItem[iap.name] = [];
+        byItem[iap.name].push({
           regionCode: regionCode, regionName: regionObj.name,
           originalPrice: iap.originalPrice, cnyPrice: iap.cnyPrice
         });
