@@ -11,12 +11,11 @@ module.exports = async function(req, res) {
   const queryApp = req.query.app;
   if (!queryApp) return res.status(400).json({ error: '请提供应用名称或ID' });
 
-  // 1. 尝试从本地推荐列表找
   let targetApp = SUPPORTED_APPS.find(
     a => a.id === queryApp || a.name.toLowerCase() === queryApp.toLowerCase()
   );
 
-  // 🌟 核心优化：全面放开限制，如果找不到就去美区实时搜索
+  // 🌟 去掉联想，直接通过美区定位唯一 ID
   if (!targetApp) {
     try {
       const searchRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(queryApp)}&limit=1&country=us&entity=software`);
@@ -30,21 +29,19 @@ module.exports = async function(req, res) {
           icon: item.artworkUrl512 || item.artworkUrl100.replace('100x100bb', '512x512bb')
         };
       }
-    } catch (e) { console.error("Search API Failed", e); }
+    } catch (e) { console.error("US Search API Failed", e); }
   }
 
-  if (!targetApp) return res.status(404).json({ error: '未找到该应用，请尝试输入正确的名称或 App ID' });
+  if (!targetApp) return res.status(404).json({ error: '未找到该应用，请检查名称或 ID' });
 
-  // 缓存版本升级到 v9
-  const cacheKey = `compare:v9:${targetApp.id}`;
+  const cacheKey = `compare:v10:${targetApp.id}`;
   const cachedData = await getCache(cacheKey);
   if (cachedData) return res.status(200).json({ status: 'success', source: 'cache', data: cachedData });
 
   const gotLock = await acquireLock(cacheKey);
-  if (!gotLock) return res.status(429).json({ status: 'processing', message: '正在为您安全抓取数据，请稍后刷新...' });
+  if (!gotLock) return res.status(429).json({ status: 'processing', message: '正在安全抓取全球数据，请稍后刷新...' });
 
   try {
-    // 后端强制补全高清图标和本体价格
     const itunesRes = await fetch(`https://itunes.apple.com/lookup?id=${targetApp.id}&country=us`);
     const itunesData = await itunesRes.json();
     if (itunesData.results && itunesData.results.length > 0) {
@@ -68,18 +65,16 @@ module.exports = async function(req, res) {
       const iapList = rawRegionData[regionCode];
       const regionObj = REGIONS.find(r => r.code === regionCode);
       
-      // 🌟 核心修复：对内购进行排序并赋予唯一 Key，解决同名不同价不展示的问题
       iapList.sort((a, b) => a.cnyPrice - b.cnyPrice);
       const nameCountMap = {};
       const processedIaps = iapList.map(iap => {
           const count = (nameCountMap[iap.name] || 0) + 1;
           nameCountMap[iap.name] = count;
-          // 通过编号区分同一个国家内的同名内购
           const uniqueName = count > 1 ? `${iap.name} #${count}` : iap.name;
           return { ...iap, uniqueName };
       });
 
-      byRegion[regionCode] = { name: regionObj.name, flag: regionObj.flag, iaps: processedIaps };
+      byRegion[regionCode] = { name: regionObj.name, iaps: processedIaps };
 
       processedIaps.forEach(iap => {
         if (!byItem[iap.uniqueName]) byItem[iap.uniqueName] = [];
