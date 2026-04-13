@@ -206,12 +206,15 @@
         const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
         document.getElementById('todayDate').innerText = `${d.getMonth() + 1}月${d.getDate()}日 ${days[d.getDay()]}`;
 
-        const HOT_APPS = [
-            { id:'6448311069', bg: 'from-green-400 to-emerald-600', tag: 'AI TOOL' },
-            { id:'324684580', bg: 'from-gray-800 to-black', tag: 'MUSIC' },
-            { id:'364709193', bg: 'from-red-500 to-red-800', tag: 'ENTERTAINMENT' },
-            { id:'686449807', bg: 'from-blue-400 to-blue-600', tag: 'SOCIAL' }
-        ];
+        // 在 index.html 的 <script> 部分找到并替换 HOT_APPS
+const HOT_APPS = [
+    { id:'6448311069', bg: 'from-green-400 to-emerald-600', tag: 'AI TOOL' }, // ChatGPT
+    { id:'1645009083', bg: 'from-orange-400 to-red-500', tag: 'AI TOOL' },    // Claude
+    { id:'284815942', bg: 'from-blue-400 to-purple-600', tag: 'AI TOOL' },   // Gemini
+    { id:'1130498044', bg: 'from-blue-300 to-blue-500', tag: 'STORAGE' },    // iCloud+
+    { id:'544007664', bg: 'from-red-500 to-red-700', tag: 'VIDEO' },         // YouTube
+    { id:'364709193', bg: 'from-gray-800 to-black', tag: 'STREAMING' }       // Netflix
+];
 
         window.onload = async () => {
             const grid = document.getElementById('appGrid');
